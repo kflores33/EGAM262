@@ -3,15 +3,12 @@ using UnityEngine;
 public class Car : MonoBehaviour
 {
     public CarStats stats;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
+    MeshRenderer meshRenderer;
+
+    private void Start()
     {
-        
+        meshRenderer.material = stats.colorMat;
+        this.name = $"{stats.colorString}Car";
     }
 }

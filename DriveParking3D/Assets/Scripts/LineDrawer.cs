@@ -4,13 +4,17 @@ using UnityEngine;
 
 public class LineDrawer : MonoBehaviour
 {
+    [Header("References")]
     public CarStats carColor;
-    LineRenderer lineRenderer;
     public GameManager gameManager;
 
+    LineRenderer lineRenderer;
     private Vector3 previousPos;
+
+    [Header("Number Stuff")]
     [SerializeField] float minDistance;
 
+    [Header("Stored Data")]
     public List<Vector3> waypoints;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -21,24 +25,28 @@ public class LineDrawer : MonoBehaviour
         lineRenderer.startColor = carColor.color;
         lineRenderer.endColor = carColor.color;
 
+        // need to set the first position to something for it to actually work!
+        lineRenderer.positionCount = 1;
+        lineRenderer.SetPosition(0, transform.position); // talking about this
         previousPos = transform.position;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Vector3.Distance(gameManager.cursorPos, previousPos) > minDistance)
+        Vector3 currerntPos = gameManager.cursorPos;
+        currerntPos.y = 0.1f;
+
+        if (Vector3.Distance(currerntPos, previousPos) > minDistance)
         { 
-            if (previousPos == transform.position)
-            {
-                lineRenderer.SetPosition(0, gameManager.cursorPos);
-            }
-            else
-            {
-                lineRenderer.positionCount++;
-                lineRenderer.SetPosition(lineRenderer.positionCount - 1, gameManager.cursorPos);
-                previousPos = gameManager.cursorPos;
-            }
+            lineRenderer.positionCount++;
+            lineRenderer.SetPosition(lineRenderer.positionCount - 1, currerntPos);
+            previousPos = currerntPos;
         }
+    }
+
+    public void DestroyThis()
+    {
+        DestroyImmediate(this, true);
     }
 }

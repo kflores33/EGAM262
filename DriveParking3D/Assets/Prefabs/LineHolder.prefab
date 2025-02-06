@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5294294929754597425}
   - component: {fileID: 6272879293256437757}
-  - component: {fileID: 7522435789609590627}
+  - component: {fileID: 7016805284002432949}
   m_Layer: 0
   m_Name: LineHolder
   m_TagString: Untagged
@@ -140,7 +140,7 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
---- !u!114 &7522435789609590627
+--- !u!114 &7016805284002432949
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -154,5 +154,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   carColor: {fileID: 0}
   gameManager: {fileID: 0}
-  minDistance: 0.3
+  minDistance: 0.5
   waypoints: []

@@ -1,11 +1,18 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class GameManager : MonoBehaviour
 {
     public Vector3 cursorPos;
 
     public GameObject LineObjPrefab;
+
+    public LayerMask layersCar;
+    public LayerMask layersGoal;
+
+    public List<LineDrawer> spawnedLines;
+    public LineDrawer lineDrawer;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -16,25 +23,67 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         GetMousePos();
 
         if (Input.GetMouseButtonDown(0))
         {
-            Ray ray = new Ray(cursorPos, Vector3.up * 2);
-            if (Physics.Raycast(ray, out RaycastHit hit))
+            Vector3 rayPoint = cursorPos;
+            rayPoint.y = 3;
+
+            Vector3 spawnPoint = rayPoint;
+            spawnPoint.y = 0;
+
+            Ray ray = new Ray(rayPoint, Vector3.down * 20);
+            Debug.DrawRay(rayPoint, Vector3.down *20, Color.red, 1.5f);
+            if (Physics.Raycast(ray, out RaycastHit hit, layersCar))
             {
-                Car car = hit.collider.GetComponent<Car>();
-                Debug.Log("car hit");
+                //Debug.Log("HIT HIT HIT");
+
+                Car car = hit.collider.GetComponentInParent<Car>();
                 if (car != null)
                 {
+                    Debug.Log("car hit");
                     // spawn line obj
-                    GameObject objToSpawn = LineObjPrefab;
-                    objToSpawn.GetComponent<LineDrawer>().gameManager = this.gameObject.GetComponent<GameManager>();
-                    objToSpawn.GetComponent<LineDrawer>().carColor = car.stats;
+                    GameObject newLine = Instantiate(LineObjPrefab, spawnPoint, Quaternion.identity);
+                    lineDrawer = newLine.GetComponent<LineDrawer>();
+                    if (lineDrawer != null)
+                    {
+                        lineDrawer.gameManager = this.gameObject.GetComponent<GameManager>();
+                        lineDrawer.carColor = car.stats;
+                    }
 
-                    Instantiate(objToSpawn, cursorPos, Quaternion.identity);
+                    lineDrawer.name = $"{lineDrawer.carColor.colorString}Line";
                 }
             }
+        }
+        if (Input.GetMouseButtonUp(0))
+        {
+            Vector3 rayPoint = cursorPos;
+            rayPoint.y = 3;
+
+            Vector3 spawnPoint = rayPoint;
+            spawnPoint.y = 0;
+
+            Ray ray = new Ray(rayPoint, Vector3.down * 20);
+            Debug.DrawRay(rayPoint, Vector3.down * 20, Color.red, 1.5f);
+            if (Physics.Raycast(ray, out RaycastHit hit, layersGoal))
+            {
+                Goal goal = hit.collider.GetComponentInParent<Goal>();
+                if (goal != null)
+                {
+                    Debug.Log("reached goal YYAAAYY!!");
+                    spawnedLines.Add(lineDrawer);
+                }
+
+                //////////
+            }
+            else
+            {
+                Debug.Log("fuck you the line doesn't work");
+                lineDrawer.DestroyThis();
+            }
+
         }
     }
 
@@ -44,7 +93,7 @@ public class GameManager : MonoBehaviour
     {
         cursorPos = Camera.main.ScreenToWorldPoint(Input.mousePosition); 
         cursorPos.y = 0;
-        Debug.DrawRay(cursorPos, Vector3.up * 20, Color.magenta, 2f);
+        //Debug.DrawRay(cursorPos, Vector3.up * 20, Color.magenta, 2f);
 
         Vector3 cameraPos = Camera.main.WorldToViewportPoint(cursorPos);
         if (cameraPos.x < 0.0) Debug.Log("Cursor is left of the camera's view");
