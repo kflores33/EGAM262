@@ -24,6 +24,7 @@ public class GameManager : MonoBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 Car car = hit.collider.GetComponent<Car>();
+                Debug.Log("car hit");
                 if (car != null)
                 {
                     // spawn line obj
