@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8dc1869d7551ddb469071c34802eb917, type: 3}
+  m_Name: CarStats.Yellow
+  m_EditorClassIdentifier: 
+  colorMat: {fileID: 2100000, guid: 3dc065a3303be704cbcdeab8f28dc89d, type: 2}
+  color: {r: 0.9490197, g: 0.86274517, b: 0, a: 1}
+  colorString: Yellow
