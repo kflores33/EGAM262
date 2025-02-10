@@ -8,6 +8,8 @@ public class Car : MonoBehaviour
 
     private void Start()
     {
+        meshRenderer = GetComponentInChildren<MeshRenderer>();
+
         meshRenderer.material = stats.colorMat;
         this.name = $"{stats.colorString}Car";
     }
