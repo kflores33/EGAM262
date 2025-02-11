@@ -73,17 +73,16 @@ public class GameManager : MonoBehaviour
                 if (goal != null)
                 {
                     Debug.Log("reached goal YYAAAYY!!");
+                    lineDrawer.canDraw = false;
                     spawnedLines.Add(lineDrawer);
+                }            
+                else
+                {                    
+                    DestroyImmediate(lineDrawer.gameObject);
+                    Debug.Log("fuck you the line doesn't work");
+                    //lineDrawer.canDraw = false;
                 }
-
-                //////////
             }
-            else
-            {
-                Debug.Log("fuck you the line doesn't work");
-                lineDrawer.DestroyThis();
-            }
-
         }
     }
 

@@ -17,6 +17,9 @@ public class LineDrawer : MonoBehaviour
     [Header("Stored Data")]
     public List<Vector3> waypoints;
 
+    [Header("Misc")]
+    public bool canDraw = true;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -37,16 +40,20 @@ public class LineDrawer : MonoBehaviour
         Vector3 currerntPos = gameManager.cursorPos;
         currerntPos.y = 0.1f;
 
-        if (Vector3.Distance(currerntPos, previousPos) > minDistance)
-        { 
-            lineRenderer.positionCount++;
-            lineRenderer.SetPosition(lineRenderer.positionCount - 1, currerntPos);
-            previousPos = currerntPos;
+        if (canDraw)
+        {
+            if (Vector3.Distance(currerntPos, previousPos) > minDistance)
+            {
+                lineRenderer.positionCount++;
+                lineRenderer.SetPosition(lineRenderer.positionCount - 1, currerntPos);
+                previousPos = currerntPos;
+            }
         }
     }
 
     public void DestroyThis()
     {
-        DestroyImmediate(this, true);
+        Debug.Log("Line destroyed!");
+        Object.Destroy(this);
     }
 }
