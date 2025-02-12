@@ -1,10 +1,14 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
     public Vector3 cursorPos;
+    public Vector3 cameraPos;
+
+    public bool lineMustDie;
 
     public GameObject LineObjPrefab;
 
@@ -14,37 +18,81 @@ public class GameManager : MonoBehaviour
     public List<LineDrawer> spawnedLines;
     public LineDrawer lineDrawer;
 
+    public List<CarAndGoalInScene> winConditionList;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        // check number of cars & goals in scene (if number is incongruent, return an error)
+        List<Car> carsInScene = new List<Car>();
+        List<Goal> goalsInScene = new List<Goal>();
+
+        if(carsInScene.Count != goalsInScene.Count)
+        {
+            Debug.Assert(false, "Amount of Cars and Goals do not match!");
+        }
+        else
+        {
+            //foreach (Car car in carsInScene) {
+            //    CarAndGoalInScene tempCarAndGoal = 
+            //        ;
+            //}
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-
         GetMousePos();
+
+        // if the cursor goes out of bounds, record it
+        if (CursorOutOfBounds(cameraPos))
+        {
+            lineMustDie = true;
+        }
 
         if (Input.GetMouseButtonDown(0))
         {
-            Vector3 rayPoint = cursorPos;
-            rayPoint.y = 3;
-
-            Vector3 spawnPoint = rayPoint;
-            spawnPoint.y = 0;
-
-            Ray ray = new Ray(rayPoint, Vector3.down * 20);
-            Debug.DrawRay(rayPoint, Vector3.down *20, Color.red, 1.5f);
-            if (Physics.Raycast(ray, out RaycastHit hit, layersCar))
+            lineMustDie = false;    
+            SpawnLine();
+        }
+        if (Input.GetMouseButtonUp(0))
+        {
+            if (lineDrawer != null)
             {
-                //Debug.Log("HIT HIT HIT");
+                HandleLineOnRelease();
+            }
+        }
+    }
 
-                Car car = hit.collider.GetComponentInParent<Car>();
-                if (car != null)
+    private void GetMousePos()
+    {
+        cursorPos = Camera.main.ScreenToWorldPoint(Input.mousePosition); 
+        cursorPos.y = 0;
+
+        cameraPos = Camera.main.WorldToViewportPoint(cursorPos);
+    }
+
+    void SpawnLine()
+    {  
+        Vector3 rayPoint = cursorPos;
+        rayPoint.y = 3;
+
+        Vector3 spawnPoint = rayPoint;
+        spawnPoint.y = 0;
+
+        Ray ray = new Ray(rayPoint, Vector3.down * 20);
+        Debug.DrawRay(rayPoint, Vector3.down *20, Color.red, 1.5f);
+        if (Physics.Raycast(ray, out RaycastHit hit, layersCar))
+        {
+            Car car = hit.collider.GetComponentInParent<Car>();
+            if (car != null)
+            {
+                Debug.Log("car hit");
+
+                // spawn line obj
+                if (!ColorAlreadyUsed(spawnedLines, car))
                 {
-                    Debug.Log("car hit");
-                    // spawn line obj
                     GameObject newLine = Instantiate(LineObjPrefab, spawnPoint, Quaternion.identity);
                     lineDrawer = newLine.GetComponent<LineDrawer>();
                     if (lineDrawer != null)
@@ -55,50 +103,97 @@ public class GameManager : MonoBehaviour
 
                     lineDrawer.name = $"{lineDrawer.carColor.colorString}Line";
                 }
+                else
+                {
+                    lineDrawer = null;
+                    Debug.Log("color already present---don't spawn line");
+                }
+            }
+            else
+            {
+                Debug.Log("nothing here");
             }
         }
-        if (Input.GetMouseButtonUp(0))
+    }
+
+    void HandleLineOnRelease()
+    {
+        Vector3 rayPoint = cursorPos;
+        rayPoint.y = 3;
+
+        Vector3 spawnPoint = rayPoint;
+        spawnPoint.y = 0;
+
+        Ray ray = new Ray(rayPoint, Vector3.down * 20);
+        Debug.DrawRay(rayPoint, Vector3.down * 20, Color.red, 1.5f);
+        if (Physics.Raycast(ray, out RaycastHit hit, layersGoal))
         {
-            Vector3 rayPoint = cursorPos;
-            rayPoint.y = 3;
+            Goal goal = hit.collider.GetComponentInParent<Goal>();
 
-            Vector3 spawnPoint = rayPoint;
-            spawnPoint.y = 0;
-
-            Ray ray = new Ray(rayPoint, Vector3.down * 20);
-            Debug.DrawRay(rayPoint, Vector3.down * 20, Color.red, 1.5f);
-            if (Physics.Raycast(ray, out RaycastHit hit, layersGoal))
+            if (goal != null)
             {
-                Goal goal = hit.collider.GetComponentInParent<Goal>();
-                if (goal != null)
+                if (lineMustDie)
+                {
+                    DestroyImmediate(lineDrawer.gameObject);
+                    Debug.Log("fuck you the line doesn't work");
+                }
+                else
                 {
                     Debug.Log("reached goal YYAAAYY!!");
                     lineDrawer.canDraw = false;
                     spawnedLines.Add(lineDrawer);
-                }            
-                else
-                {                    
-                    DestroyImmediate(lineDrawer.gameObject);
-                    Debug.Log("fuck you the line doesn't work");
-                    //lineDrawer.canDraw = false;
+                    lineDrawer = null;
                 }
+            }
+            else
+            {
+                DestroyImmediate(lineDrawer.gameObject);
+                Debug.Log("fuck you the line doesn't work");
             }
         }
     }
 
-    // if player clicks and holds m1 at a car, create line renderer object and give it the color of the car
-
-    private void GetMousePos()
+    public bool ColorAlreadyUsed(List<LineDrawer> lines, Car car)
     {
-        cursorPos = Camera.main.ScreenToWorldPoint(Input.mousePosition); 
-        cursorPos.y = 0;
-        //Debug.DrawRay(cursorPos, Vector3.up * 20, Color.magenta, 2f);
+        string carColor = car.stats.colorString;
+        List<string> lineColors = new List<string>();
 
-        Vector3 cameraPos = Camera.main.WorldToViewportPoint(cursorPos);
-        if (cameraPos.x < 0.0) Debug.Log("Cursor is left of the camera's view");
-        if (cameraPos.x > 1.0) Debug.Log("Cursor is right of the camera's view");
-        if (cameraPos.y < 0.0) Debug.Log("Cursor is below the camera's view");
-        if (cameraPos.y > 1.0) Debug.Log("Cursor is above the camera's view");
-        // if any of these are true when drawing a line, delete the line on release of m1
+        // add color string of each line into a new string list
+        foreach (LineDrawer line in lines) 
+        {
+            lineColors.Add(line.carColor.colorString);
+        }
+
+        if (lineColors.Any(line => line.Contains(carColor)))
+        {
+            //Debug.Log("color already used!");
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
+
+    bool CursorOutOfBounds(Vector3 cursor)
+    {
+        if (cameraPos.x < 0.0) return true;
+        if (cameraPos.x > 1.0) return true;
+        if (cameraPos.y < 0.0) return true;
+        if (cameraPos.y > 1.0) return true;
+
+        else return false;
+    }
+}
+
+[System.Serializable]
+public struct CarAndGoalInScene
+{
+    public Car car;
+    public string carColor;
+
+    public Goal goal;
+    public string goalColor;
+
+    public bool hasReachedGoal;
 }
