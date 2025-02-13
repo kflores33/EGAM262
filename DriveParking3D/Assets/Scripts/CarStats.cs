@@ -4,6 +4,7 @@ using UnityEngine;
 public class CarStats : ScriptableObject
 {
     public Material colorMat;
+    public Material goalMat;
     public Color color;
     public string colorString;
 }

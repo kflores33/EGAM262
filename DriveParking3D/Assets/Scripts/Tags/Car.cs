@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,6 +7,8 @@ public class Car : MonoBehaviour
     public CarStats stats;
 
     MeshRenderer meshRenderer;
+
+    LineDrawer lineDrawer;
 
     public enum CarStates
     {
@@ -36,12 +39,16 @@ public class Car : MonoBehaviour
     }
 
     void UpdateIdle()
+    {
+        if (FindAnyObjectByType<LineDrawer>().carColor.colorString == stats.colorString)
         {
-
+            lineDrawer = FindAnyObjectByType<LineDrawer>();
+            currentState = CarStates.ReadyToDrive;
         }
+    }
     void UpdateReadyToDrive()
     {
-
+        // once line exists, store 
     }
     void UpdateDriving() 
     {
