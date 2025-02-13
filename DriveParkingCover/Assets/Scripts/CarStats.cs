@@ -9,6 +9,6 @@ public class CarStats : ScriptableObject
     public string colorString;
 
     [Header("Car Specific Variables")]
-    public float maxDistance = 0.3f;
-    public float carSpeed = 2f;
+    public float maxDistance = 0.1f;
+    public float carSpeed = 15f;
 }

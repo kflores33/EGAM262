@@ -10,7 +10,9 @@ public class Car : MonoBehaviour
     Rigidbody2D rb;
 
     LineDrawer lineDrawer;
-    List<Vector2> waypoints;
+    List<Vector2> waypoints = new List<Vector2>();
+
+    public bool canGetLine = false;
 
     public Coroutine followPathCoroutine = null;
     public enum CarStates
@@ -41,22 +43,33 @@ public class Car : MonoBehaviour
 
     void UpdateIdle()
     {
-        if (FindAnyObjectByType<LineDrawer>() != null)
+        if (canGetLine)
         {
-            if (FindAnyObjectByType<LineDrawer>().carColor.colorString == stats.colorString)
+            LineDrawer[] lines = FindObjectsByType<LineDrawer>(FindObjectsSortMode.None);
+            foreach (LineDrawer line in lines)
             {
-                lineDrawer = FindAnyObjectByType<LineDrawer>();
-                currentState = CarStates.ReadyToDrive;
+                Debug.Log("entered for each loop");
+                if (line.carColor.colorString == stats.colorString)
+                {
+                    lineDrawer = line;
+
+                    foreach (Vector2 waypoint in lineDrawer.waypoints)
+                    {
+                        Debug.Log("got lineDrawer reference!");
+                        waypoints.Add(waypoint);
+                    }
+
+                    currentState = CarStates.ReadyToDrive;
+
+                    break;
+                }
             }
+            canGetLine = false;
         }
     }
     void UpdateReadyToDrive()
     {
-        // once line exists, store the waypoints
-        if (waypoints == null)
-        {
-            waypoints = lineDrawer.waypoints;
-        }
+
     }
 
     public void StartDriving()
@@ -72,10 +85,11 @@ public class Car : MonoBehaviour
             // when the distance between the car and the waypoint is greater than maxDistance...
             while (Vector2.Distance(transform.position, waypoint) >= stats.maxDistance) 
             {
-                transform.right = Vector2.Lerp(new Vector2(transform.position.x, transform.position.y), 
-                    (new Vector2(transform.position.x, transform.position.y) - (waypoint)) * -1, Time.deltaTime * stats.carSpeed); // rotate car in direction of waypoint
+                transform.up = Vector2.Lerp(new Vector2(transform.position.x, transform.position.y), 
+                    (new Vector2(transform.position.x, transform.position.y) - (waypoint)) * -1, Time.deltaTime * stats.carSpeed); // rotate car in direction of (next) waypoint
 
-                rb.AddForce(transform.right * stats.carSpeed * Time.deltaTime); // move car forward
+                //rb.AddForce(transform.up * stats.carSpeed * Time.deltaTime);
+                transform.position = Vector2.Lerp(new Vector2(transform.position.x, transform.position.y), waypoint, Time.deltaTime * stats.carSpeed);
 
                 yield return null;
             }
@@ -85,6 +99,16 @@ public class Car : MonoBehaviour
         {
             rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.deltaTime); //interpolate between 
             yield return null;
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.GetComponentInParent<Car>() != null)
+        {
+            Debug.Log("hit car");
+            RestartScene restart = FindFirstObjectByType<RestartScene>();
+            restart.restartGame();
         }
     }
 }

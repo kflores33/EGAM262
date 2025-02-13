@@ -79,6 +79,11 @@ public class GameManager : MonoBehaviour
         if (spawnedLines.Count() == carGoalCount) 
         {
             startButton.SetActive(true);
+
+            foreach (Car car in carList)
+            {
+                car.GetComponent<Car>().canGetLine = true;
+            }
         }
     }
 
@@ -209,7 +214,6 @@ public class GameManager : MonoBehaviour
         foreach (Car car in carList)
         {
             car.GetComponent<Car>().StartDriving();
-            Debug.Log("switched to drive state");
         }
     }
 }

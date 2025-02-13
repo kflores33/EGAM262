@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      RedParking_0: 5632058439571738484
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

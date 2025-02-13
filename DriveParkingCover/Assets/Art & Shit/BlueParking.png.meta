@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      BlueParking_0: -4326273784384856041
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
