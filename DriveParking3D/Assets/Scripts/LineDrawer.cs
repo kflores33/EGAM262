@@ -31,6 +31,7 @@ public class LineDrawer : MonoBehaviour
         // need to set the first position to something for it to actually work!
         lineRenderer.positionCount = 1;
         lineRenderer.SetPosition(0, transform.position); // talking about this
+
         previousPos = transform.position;
     }
 
@@ -42,18 +43,15 @@ public class LineDrawer : MonoBehaviour
 
         if (canDraw)
         {
-            if (Vector3.Distance(currerntPos, previousPos) > minDistance)
+            if (Vector3.Distance(currerntPos, previousPos) >= minDistance)
             {
                 lineRenderer.positionCount++;
                 lineRenderer.SetPosition(lineRenderer.positionCount - 1, currerntPos);
+
+                waypoints.Add(currerntPos);
+
                 previousPos = currerntPos;
             }
         }
-    }
-
-    public void DestroyThis()
-    {
-        Debug.Log("Line destroyed!");
-        Object.Destroy(this);
     }
 }

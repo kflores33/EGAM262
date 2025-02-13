@@ -1,14 +1,22 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class Car : MonoBehaviour
 {
     public CarStats stats;
 
+    NavMeshAgent agent;
+
     MeshRenderer meshRenderer;
 
     LineDrawer lineDrawer;
+    List<Vector3> waypointsCopy;
+
+    public float maxDistance;
 
     public enum CarStates
     {
@@ -20,6 +28,7 @@ public class Car : MonoBehaviour
 
     private void Start()
     {
+        agent = GetComponent<NavMeshAgent>();
         meshRenderer = GetComponentInChildren<MeshRenderer>();
 
         meshRenderer.material = stats.colorMat;
@@ -40,18 +49,30 @@ public class Car : MonoBehaviour
 
     void UpdateIdle()
     {
-        if (FindAnyObjectByType<LineDrawer>().carColor.colorString == stats.colorString)
+        if (FindAnyObjectByType<LineDrawer>() != null)
         {
-            lineDrawer = FindAnyObjectByType<LineDrawer>();
-            currentState = CarStates.ReadyToDrive;
+            if (FindAnyObjectByType<LineDrawer>().carColor.colorString == stats.colorString)
+            {
+                lineDrawer = FindAnyObjectByType<LineDrawer>();
+                currentState = CarStates.ReadyToDrive;
+            }
         }
     }
     void UpdateReadyToDrive()
     {
-        // once line exists, store 
+        // once line exists, store the waypoints
+        if (waypointsCopy != null)
+        {
+            waypointsCopy = lineDrawer.waypoints;
+        }
     }
     void UpdateDriving() 
     {
-    
+        // once driving, delete already reached waypoints
+        agent.destination = waypointsCopy[0];
+        if (Vector3.Distance(transform.position, waypointsCopy[0]) <= maxDistance)
+        {
+            waypointsCopy.Remove(waypointsCopy[0]);
+        }
     }
 }

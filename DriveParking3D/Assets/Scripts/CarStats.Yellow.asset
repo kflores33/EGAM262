@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: CarStats.Yellow
   m_EditorClassIdentifier: 
   colorMat: {fileID: 2100000, guid: 3dc065a3303be704cbcdeab8f28dc89d, type: 2}
+  goalMat: {fileID: 2100000, guid: 3ba84f7e56d436943a411706ceff073e, type: 2}
   color: {r: 0.9490197, g: 0.86274517, b: 0, a: 1}
   colorString: Yellow

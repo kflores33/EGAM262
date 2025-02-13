@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dc1869d7551ddb469071c34802eb917, type: 3}
   m_Name: CarStats.Cyan
   m_EditorClassIdentifier: 
-  colorMat: {fileID: 0}
-  color: {r: 0, g: 0, b: 0, a: 0}
-  colorString: 
+  colorMat: {fileID: 2100000, guid: e0f3546a2bc0ad34d889b7c9390cb6ea, type: 2}
+  goalMat: {fileID: 2100000, guid: 912ebb7d7213c304cad7192053c2df45, type: 2}
+  color: {r: 0.18039216, g: 0.92549026, b: 0.9058824, a: 0}
+  colorString: Cyan

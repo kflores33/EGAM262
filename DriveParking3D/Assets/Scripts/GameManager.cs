@@ -1,42 +1,45 @@
 using UnityEngine;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using System.Linq;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    public Vector3 cursorPos;
-    public Vector3 cameraPos;
+    [HideInInspector] public Vector3 cursorPos;
+    [HideInInspector] public Vector3 cameraPos;
+    [HideInInspector] public bool lineMustDie;
 
-    public bool lineMustDie;
-
+    [Header("References")]
     public GameObject LineObjPrefab;
+    public Button startButton;
 
     public LayerMask layersCar;
     public LayerMask layersGoal;
 
+    [Header("Lists")]
     public List<LineDrawer> spawnedLines;
     public LineDrawer lineDrawer;
 
-    public List<CarAndGoalInScene> winConditionList;
+    public Car[] carList;
+    public Goal[] goalList;
+    int carGoalCount;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // check number of cars & goals in scene (if number is incongruent, return an error)
-        List<Car> carsInScene = new List<Car>();
-        List<Goal> goalsInScene = new List<Goal>();
+        startButton.enabled = false;
 
-        if(carsInScene.Count != goalsInScene.Count)
+        // check number of cars & goals in scene (if number is incongruent, return an error)
+        carList = FindObjectsByType<Car>(FindObjectsSortMode.None);
+        goalList = FindObjectsByType<Goal>(FindObjectsSortMode.None);
+
+        if(carList.Count() != goalList.Count())
         {
             Debug.Assert(false, "Amount of Cars and Goals do not match!");
         }
         else
         {
-            //foreach (Car car in carsInScene) {
-            //    CarAndGoalInScene tempCarAndGoal = 
-            //        ;
-            //}
+            carGoalCount = carList.Count();
         }
     }
 
@@ -63,9 +66,14 @@ public class GameManager : MonoBehaviour
                 HandleLineOnRelease();
             }
         }
+
+        if (spawnedLines.Count() == carGoalCount) 
+        {
+            startButton.enabled = true;
+        }
     }
 
-    private void GetMousePos()
+    void GetMousePos()
     {
         cursorPos = Camera.main.ScreenToWorldPoint(Input.mousePosition); 
         cursorPos.y = 0;
@@ -74,15 +82,19 @@ public class GameManager : MonoBehaviour
     }
 
     void SpawnLine()
-    {  
+    {
+        // origin of ray
         Vector3 rayPoint = cursorPos;
         rayPoint.y = 3;
 
+        // position lineDrawer object should spawn
         Vector3 spawnPoint = rayPoint;
         spawnPoint.y = 0;
 
+        // create ray
         Ray ray = new Ray(rayPoint, Vector3.down * 20);
         Debug.DrawRay(rayPoint, Vector3.down *20, Color.red, 1.5f);
+
         if (Physics.Raycast(ray, out RaycastHit hit, layersCar))
         {
             Car car = hit.collider.GetComponentInParent<Car>();
@@ -91,7 +103,7 @@ public class GameManager : MonoBehaviour
                 Debug.Log("car hit");
 
                 // spawn line obj
-                if (!ColorAlreadyUsed(spawnedLines, car))
+                if (!ColorAlreadyUsed(spawnedLines, car)) // if color is not already used, spawn a line
                 {
                     GameObject newLine = Instantiate(LineObjPrefab, spawnPoint, Quaternion.identity);
                     lineDrawer = newLine.GetComponent<LineDrawer>();
@@ -118,26 +130,30 @@ public class GameManager : MonoBehaviour
 
     void HandleLineOnRelease()
     {
+        // origin of ray
         Vector3 rayPoint = cursorPos;
         rayPoint.y = 3;
 
+        // position lineDrawer object should spawn
         Vector3 spawnPoint = rayPoint;
         spawnPoint.y = 0;
 
+        // create ray
         Ray ray = new Ray(rayPoint, Vector3.down * 20);
         Debug.DrawRay(rayPoint, Vector3.down * 20, Color.red, 1.5f);
+
         if (Physics.Raycast(ray, out RaycastHit hit, layersGoal))
         {
             Goal goal = hit.collider.GetComponentInParent<Goal>();
 
             if (goal != null)
             {
-                if (lineMustDie)
+                if (lineMustDie) // if the line has gone out of the bounds of the screen, it won't go through
                 {
                     DestroyImmediate(lineDrawer.gameObject);
                     Debug.Log("fuck you the line doesn't work");
                 }
-                else
+                else // line is added to a list and the lineDrawer variable is set to null
                 {
                     Debug.Log("reached goal YYAAAYY!!");
                     lineDrawer.canDraw = false;
@@ -145,7 +161,7 @@ public class GameManager : MonoBehaviour
                     lineDrawer = null;
                 }
             }
-            else
+            else // destroy line if it doesnt reach the target
             {
                 DestroyImmediate(lineDrawer.gameObject);
                 Debug.Log("fuck you the line doesn't work");
@@ -153,18 +169,18 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public bool ColorAlreadyUsed(List<LineDrawer> lines, Car car)
+    bool ColorAlreadyUsed(List<LineDrawer> lines, Car car)
     {
         string carColor = car.stats.colorString;
         List<string> lineColors = new List<string>();
 
         // add color string of each line into a new string list
-        foreach (LineDrawer line in lines) 
+        foreach (LineDrawer line in lines) // creates a list storing the color value assigned to the lines
         {
             lineColors.Add(line.carColor.colorString);
         }
 
-        if (lineColors.Any(line => line.Contains(carColor)))
+        if (lineColors.Any(line => line.Contains(carColor))) // checks if the list of lines are the same color as the car
         {
             //Debug.Log("color already used!");
             return true;
@@ -184,16 +200,12 @@ public class GameManager : MonoBehaviour
 
         else return false;
     }
-}
 
-[System.Serializable]
-public struct CarAndGoalInScene
-{
-    public Car car;
-    public string carColor;
-
-    public Goal goal;
-    public string goalColor;
-
-    public bool hasReachedGoal;
+    public void StartButton() // make cars move
+    {
+        foreach (Car car in carList)
+        {
+            car.currentState = Car.CarStates.Driving;
+        }
+    }
 }
