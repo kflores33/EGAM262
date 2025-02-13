@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5294294929754597425}
-  - component: {fileID: 6272879293256437757}
+  - component: {fileID: -4615272031545064026}
   - component: {fileID: 7016805284002432949}
   m_Layer: 0
   m_Name: LineHolder
@@ -33,7 +33,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!120 &6272879293256437757
+--- !u!120 &-4615272031545064026
 LineRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
@@ -89,7 +89,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.28888893
+        value: 0.17920876
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -129,7 +129,7 @@ LineRenderer:
       m_ColorSpace: -1
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
-    numCornerVertices: 3
+    numCornerVertices: 0
     numCapVertices: 0
     alignment: 0
     textureMode: 0
@@ -154,6 +154,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   carColor: {fileID: 0}
   gameManager: {fileID: 0}
-  minDistance: 0
+  minDistance: 0.3
   waypoints: []
   canDraw: 1

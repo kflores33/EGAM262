@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
+using Unity.VisualScripting;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,7 +12,7 @@ public class GameManager : MonoBehaviour
 
     [Header("References")]
     public GameObject LineObjPrefab;
-    public Button startButton;
+    public GameObject startButton;
 
     public LayerMask layersCar;
     public LayerMask layersGoal;
@@ -20,18 +21,26 @@ public class GameManager : MonoBehaviour
     public List<LineDrawer> spawnedLines;
     public LineDrawer lineDrawer;
 
-    public Car[] carList;
-    public Goal[] goalList;
+    public List<Car> carList;
+    public List<Goal> goalList;
     int carGoalCount;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        startButton.enabled = false;
+        startButton.SetActive(false);
 
         // check number of cars & goals in scene (if number is incongruent, return an error)
-        carList = FindObjectsByType<Car>(FindObjectsSortMode.None);
-        goalList = FindObjectsByType<Goal>(FindObjectsSortMode.None);
+        Car[] carArray = FindObjectsByType<Car>(FindObjectsSortMode.None);
+        foreach (Car car in carArray)
+        {
+            carList.Add(car);
+        }
+        Goal[] goalArray = FindObjectsByType<Goal>(FindObjectsSortMode.None);
+        foreach (Goal goal in goalArray)
+        {
+            goalList.Add(goal);
+        }
 
         if(carList.Count() != goalList.Count())
         {
@@ -69,7 +78,7 @@ public class GameManager : MonoBehaviour
 
         if (spawnedLines.Count() == carGoalCount) 
         {
-            startButton.enabled = true;
+            startButton.SetActive(true);
         }
     }
 
@@ -151,14 +160,15 @@ public class GameManager : MonoBehaviour
                     Debug.Log("reached goal YYAAAYY!!");
                     lineDrawer.canDraw = false;
                     spawnedLines.Add(lineDrawer);
+
                     lineDrawer = null;
                 }
             }
-            else // destroy line if it doesnt reach the target
-            {
-                DestroyImmediate(lineDrawer.gameObject);
-                Debug.Log("fuck you the line doesn't work");
-            }
+        }
+        else
+        {
+            DestroyImmediate(lineDrawer.gameObject);
+            Debug.Log("fuck you the line doesn't work");
         }
     }
 
@@ -198,7 +208,8 @@ public class GameManager : MonoBehaviour
     {
         foreach (Car car in carList)
         {
-            car.currentState = Car.CarStates.Driving;
+            car.GetComponent<Car>().StartDriving();
+            Debug.Log("switched to drive state");
         }
     }
 }

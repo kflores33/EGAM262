@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   goalMat: {fileID: -4326273784384856041, guid: e5b49c656e4819e43ab6cd9ac0f0b0a7, type: 3}
   carSprite: {fileID: 1220235376439114574, guid: dc2a4e0d07ae27943914dd544a25fc7b, type: 3}
-  color: {r: 0.42352945, g: 0.9215687, b: 0.9490197, a: 0}
+  color: {r: 0.42352945, g: 0.9215687, b: 0.9490197, a: 1}
   colorString: Cyan
