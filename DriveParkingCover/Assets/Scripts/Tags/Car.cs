@@ -26,6 +26,7 @@ public class Car : MonoBehaviour
     {
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         rb = GetComponentInChildren<Rigidbody2D>();
+        //rb.useFullKinematicContacts = true;
 
         spriteRenderer.sprite = stats.carSprite;
         this.name = $"{stats.colorString}Car";
@@ -105,6 +106,12 @@ public class Car : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.GetComponentInParent<Car>() != null)
+        {
+            Debug.Log("hit car");
+            RestartScene restart = FindFirstObjectByType<RestartScene>();
+            restart.restartGame();
+        }
+        if (collision.gameObject.GetComponent<Car>() != null)
         {
             Debug.Log("hit car");
             RestartScene restart = FindFirstObjectByType<RestartScene>();
