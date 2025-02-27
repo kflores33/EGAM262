@@ -1,0 +1,149 @@
+{
+    "name": "InputMap",
+    "maps": [
+        {
+            "name": "PlayerInputDefault",
+            "id": "9c32aa5a-139b-41ba-bf60-eeec16ff13ec",
+            "actions": [
+                {
+                    "name": "JumpInput",
+                    "type": "Button",
+                    "id": "d9812f27-6fbc-40d5-9d4c-1985f2d84f54",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "GrappleShootInput",
+                    "type": "Button",
+                    "id": "87ba570c-778f-459e-a11a-5fb9fd362370",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "GrappleRetractInput",
+                    "type": "Button",
+                    "id": "a2c4fa50-39e4-4f7a-8113-de43a94e598f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "GrappleAimInput",
+                    "type": "Value",
+                    "id": "5059688e-cb31-4720-8d22-72a674427ca6",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "a6fc145f-2e96-4d80-a970-d6fbe34e4572",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "JumpInput",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "fbaa3f19-f09f-4e45-b174-09553bc27423",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "JumpInput",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0635d48c-b0ad-4144-8037-c63a0e8306aa",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "JumpInput",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0bc21444-42e6-425f-9146-37e07fdfd578",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GrappleShootInput",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "24f6e2d5-9a04-4cc3-8641-d6d333534955",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GrappleShootInput",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9632333b-bbdb-43bf-bebe-fd1949fe49f4",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GrappleRetractInput",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "08f9bd3f-9dcb-40e0-bd4e-89e3afcacb5e",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GrappleRetractInput",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3f4d347d-a0a2-4cce-a239-181211758696",
+                    "path": "<Mouse>/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GrappleAimInput",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6701ddce-1f5a-4b2e-94c4-df350ab5a59c",
+                    "path": "<Gamepad>/leftStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GrappleAimInput",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
