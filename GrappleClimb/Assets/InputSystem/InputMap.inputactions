@@ -132,15 +132,59 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "",
-                    "id": "6701ddce-1f5a-4b2e-94c4-df350ab5a59c",
-                    "path": "<Gamepad>/leftStick",
+                    "name": "AnalogInput [Gamepad]",
+                    "id": "3cdad58d-3d4c-4469-8587-265cfc33e503",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GrappleAimInput",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Up",
+                    "id": "e5714de2-b159-4690-bc19-7c726d3bc915",
+                    "path": "<Gamepad>/leftStick/up",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "GrappleAimInput",
                     "isComposite": false,
-                    "isPartOfComposite": false
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Down",
+                    "id": "d219883c-3303-41a6-9c59-1e9c9df58fbc",
+                    "path": "<Gamepad>/leftStick/down",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GrappleAimInput",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Left",
+                    "id": "c3165501-6eb7-45e0-8cbd-4295d18de9fd",
+                    "path": "<Gamepad>/leftStick/left",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GrappleAimInput",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Right",
+                    "id": "2f5886e1-6d71-4359-bc1e-bc525f5e7efe",
+                    "path": "<Gamepad>/leftStick/right",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GrappleAimInput",
+                    "isComposite": false,
+                    "isPartOfComposite": true
                 }
             ]
         }
