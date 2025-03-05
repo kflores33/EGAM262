@@ -62,6 +62,15 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""AimPlayer"",
+                    ""type"": ""Value"",
+                    ""id"": ""8515b246-4a46-4984-a36c-5d0cdc01b556"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -69,6 +78,17 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""a6fc145f-2e96-4d80-a970-d6fbe34e4572"",
                     ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""JumpInput"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bf41ef21-b8a6-4218-ac47-8993bfab4603"",
+                    ""path"": ""<Keyboard>/upArrow"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -167,7 +187,7 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""Up"",
                     ""id"": ""e5714de2-b159-4690-bc19-7c726d3bc915"",
-                    ""path"": ""<Gamepad>/leftStick/up"",
+                    ""path"": ""<Gamepad>/rightStick/up"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -178,7 +198,7 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""Down"",
                     ""id"": ""d219883c-3303-41a6-9c59-1e9c9df58fbc"",
-                    ""path"": ""<Gamepad>/leftStick/down"",
+                    ""path"": ""<Gamepad>/rightStick/down"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -189,7 +209,7 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""Left"",
                     ""id"": ""c3165501-6eb7-45e0-8cbd-4295d18de9fd"",
-                    ""path"": ""<Gamepad>/leftStick/left"",
+                    ""path"": ""<Gamepad>/rightStick/left"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -200,11 +220,121 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""Right"",
                     ""id"": ""2f5886e1-6d71-4359-bc1e-bc525f5e7efe"",
-                    ""path"": ""<Gamepad>/leftStick/right"",
+                    ""path"": ""<Gamepad>/rightStick/right"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""GrappleAimInput"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""2D Vector WASD"",
+                    ""id"": ""3300578c-18df-4b86-8eb7-ce161dc0bccb"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AimPlayer"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""6bc2e101-2fee-4bf5-9f68-815ce16f3edd"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AimPlayer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""ab8cca7e-823c-4b87-a062-90c589fe26b3"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AimPlayer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""0703e8e1-c255-4fb4-b9ed-5981e35f80d8"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AimPlayer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""d13bf0d0-f065-4c2e-9a1f-8a6e8eac8e5f"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AimPlayer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""2D Vector"",
+                    ""id"": ""6b129015-6072-4d7a-bdc1-a610f65a9f45"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AimPlayer"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""929c7020-eb11-46cb-af97-0590d4dc857e"",
+                    ""path"": ""<Gamepad>/leftStick/up"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AimPlayer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""32c0bd39-9f98-45bb-a328-ac1570be2a89"",
+                    ""path"": ""<Gamepad>/leftStick/down"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AimPlayer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""f5cce0e7-467e-4019-9194-7f5395ebd882"",
+                    ""path"": ""<Gamepad>/leftStick/left"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AimPlayer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""2388d33b-f16f-4223-9840-d0d7f59d16d9"",
+                    ""path"": ""<Gamepad>/leftStick/right"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AimPlayer"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
                 }
@@ -219,6 +349,7 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
         m_PlayerInputDefault_GrappleShootInput = m_PlayerInputDefault.FindAction("GrappleShootInput", throwIfNotFound: true);
         m_PlayerInputDefault_GrappleRetractInput = m_PlayerInputDefault.FindAction("GrappleRetractInput", throwIfNotFound: true);
         m_PlayerInputDefault_GrappleAimInput = m_PlayerInputDefault.FindAction("GrappleAimInput", throwIfNotFound: true);
+        m_PlayerInputDefault_AimPlayer = m_PlayerInputDefault.FindAction("AimPlayer", throwIfNotFound: true);
     }
 
     ~@InputMap()
@@ -289,6 +420,7 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerInputDefault_GrappleShootInput;
     private readonly InputAction m_PlayerInputDefault_GrappleRetractInput;
     private readonly InputAction m_PlayerInputDefault_GrappleAimInput;
+    private readonly InputAction m_PlayerInputDefault_AimPlayer;
     public struct PlayerInputDefaultActions
     {
         private @InputMap m_Wrapper;
@@ -297,6 +429,7 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
         public InputAction @GrappleShootInput => m_Wrapper.m_PlayerInputDefault_GrappleShootInput;
         public InputAction @GrappleRetractInput => m_Wrapper.m_PlayerInputDefault_GrappleRetractInput;
         public InputAction @GrappleAimInput => m_Wrapper.m_PlayerInputDefault_GrappleAimInput;
+        public InputAction @AimPlayer => m_Wrapper.m_PlayerInputDefault_AimPlayer;
         public InputActionMap Get() { return m_Wrapper.m_PlayerInputDefault; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -318,6 +451,9 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
             @GrappleAimInput.started += instance.OnGrappleAimInput;
             @GrappleAimInput.performed += instance.OnGrappleAimInput;
             @GrappleAimInput.canceled += instance.OnGrappleAimInput;
+            @AimPlayer.started += instance.OnAimPlayer;
+            @AimPlayer.performed += instance.OnAimPlayer;
+            @AimPlayer.canceled += instance.OnAimPlayer;
         }
 
         private void UnregisterCallbacks(IPlayerInputDefaultActions instance)
@@ -334,6 +470,9 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
             @GrappleAimInput.started -= instance.OnGrappleAimInput;
             @GrappleAimInput.performed -= instance.OnGrappleAimInput;
             @GrappleAimInput.canceled -= instance.OnGrappleAimInput;
+            @AimPlayer.started -= instance.OnAimPlayer;
+            @AimPlayer.performed -= instance.OnAimPlayer;
+            @AimPlayer.canceled -= instance.OnAimPlayer;
         }
 
         public void RemoveCallbacks(IPlayerInputDefaultActions instance)
@@ -357,5 +496,6 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
         void OnGrappleShootInput(InputAction.CallbackContext context);
         void OnGrappleRetractInput(InputAction.CallbackContext context);
         void OnGrappleAimInput(InputAction.CallbackContext context);
+        void OnAimPlayer(InputAction.CallbackContext context);
     }
 }
