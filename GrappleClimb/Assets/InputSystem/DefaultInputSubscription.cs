@@ -18,6 +18,9 @@ public class DefaultInputSubscription : MonoBehaviour
         _input = new InputMap();
         _input.PlayerInputDefault.Enable();
 
+        _input.PlayerInputDefault.JumpInput.started += SetJump;
+        _input.PlayerInputDefault.JumpInput.canceled += SetJump;
+
         // by default, these are performed constantly (methinks)
         _input.PlayerInputDefault.GrappleAimInput.performed += SetGrappleAim; // .performed checks constantly?
         _input.PlayerInputDefault.GrappleAimInput.canceled += SetGrappleAim;
@@ -27,6 +30,9 @@ public class DefaultInputSubscription : MonoBehaviour
     }
     private void OnDisable() // unsubscribe to inputs
     {
+        _input.PlayerInputDefault.JumpInput.started -= SetJump;
+        _input.PlayerInputDefault.JumpInput.canceled -= SetJump;
+
         _input.PlayerInputDefault.GrappleAimInput.performed -= SetGrappleAim;
         _input.PlayerInputDefault.GrappleAimInput.canceled -= SetGrappleAim;
 
@@ -39,15 +45,15 @@ public class DefaultInputSubscription : MonoBehaviour
     private void Update() 
     {
         // this stuff is not constantly called (even though its in update) because of WasPressedThisFrame()
-        JumpInput = _input.PlayerInputDefault.JumpInput.WasPressedThisFrame();
+        //JumpInput = _input.PlayerInputDefault.JumpInput.WasPressedThisFrame();
         GrappleShootInput = _input.PlayerInputDefault.GrappleShootInput.WasPressedThisFrame();
         GrappleRetractInput = _input.PlayerInputDefault.GrappleRetractInput.WasPressedThisFrame();
     }
 
-    //void SetJump(InputAction.CallbackContext ctx)
-    //{
-    //    JumpInput = ctx.started;
-    //}
+    void SetJump(InputAction.CallbackContext ctx)
+    {
+        JumpInput = ctx.started;
+    }
     //void SetGrappleShoot(InputAction.CallbackContext ctx)
     //{
     //    GrappleShootInput = ctx.started;
