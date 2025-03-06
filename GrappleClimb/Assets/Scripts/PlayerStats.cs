@@ -38,6 +38,9 @@ public class PlayerStats : ScriptableObject
     [Tooltip("The immediate velocity applied when jumping")]
     public float JumpPower = 36;
 
+    [Tooltip("The immediate velocity applied when jumping from a wall")]
+    public float WallJumpPower = 36;
+
     [Tooltip("The maximum vertical movement speed")]
     public float MaxFallSpeed = 40;
 

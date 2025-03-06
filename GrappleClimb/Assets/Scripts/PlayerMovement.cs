@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
-using Unity.VisualScripting.Antlr3.Runtime.Misc;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
@@ -36,7 +36,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Awake()
     {
-        _rb = GetComponentInChildren<Rigidbody>();
+        _rb = GetComponent<Rigidbody>();
         _col = GetComponentInChildren<CapsuleCollider>();
     }
 
@@ -95,7 +95,7 @@ public class PlayerMovement : MonoBehaviour
 
         HandleHorizontalDirection();
         HandleGravity();
-        HandleWallSlide();
+        HandleJump();
 
         ApplyMovement();
     }
@@ -113,8 +113,10 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    bool CanWallSlide => _walled && !IsHoldingWall() && !_grounded;
     private void HandleGravity()
     {
+
         if (_grounded && _frameVelocity.y <= 0f)
         {
             _frameVelocity.y = _stats.GroundingForce;
@@ -124,8 +126,116 @@ public class PlayerMovement : MonoBehaviour
             var inAirGravity = _stats.FallAcceleration;
             if (_jumpEndedEarly && _frameVelocity.y > 0) inAirGravity *= _stats.JumpEndEarlyGravityModifier;
             _frameVelocity.y = Mathf.MoveTowards(_frameVelocity.y, -_stats.MaxFallSpeed, inAirGravity * Time.fixedDeltaTime);
-        }
+        }        
     }
+
+    #region Collisions
+
+    private float _frameLeftGrounded = float.MinValue;
+    private bool _grounded;
+
+    private float _frameLeftWall = float.MinValue;  
+    private bool _walled;
+
+    //private void OnDrawGizmosSelected()
+    //{
+    //    Gizmos.color = Color.yellow;
+    //    Gizmos.DrawWireCube(transform.position + _col.center, new Vector3(1.25f, 1, 1));
+    //}
+
+    private void CheckCollisions()
+    {
+        #region ignore
+        Vector3 p1 = transform.position + _col.center + Vector3.up * (-_col.height * 0.5f + _col.radius); /* half of collider height + radius */ p1.z = 0f; // point at the bottom (start) of the capsule
+        Vector3 p2 = p1 + Vector3.up * (_col.height - _col.radius*2.0f); p2.z = 0f; // point at the top (end) of the capsule
+
+        // Ground, Ceiling
+        bool groundHit = Physics.OverlapCapsule(p1 - new Vector3(0.0f, _stats.GrounderDistance, 0.0f), p2, _col.radius*0.9f, ~_stats.PlayerLayer).Length > 0;
+        bool ceilingHit = Physics.OverlapCapsule(p1, p2 + new Vector3(0.0f, _stats.GrounderDistance, 0.0f), _col.radius * 0.9f, ~_stats.PlayerLayer).Length > 0;
+
+        Vector3 rayP1 = transform.position + _col.center + Vector3.left * (_col.radius * 1.25f);
+        Vector3 rayP2 = rayP1 + Vector3.right * ((_col.radius * 1.25f) * 2 );
+        //Debug.DrawLine( rayP1, rayP2, Color.magenta, 0.5f );
+        Vector3 boxDimensions = new Vector3(1.25f, 1, 1);
+
+        bool wallHit = Physics.OverlapBox(_col.center, boxDimensions, Quaternion.identity, ~_stats.PlayerLayer).Length > 0;
+
+        if (ceilingHit)
+        {
+            _frameVelocity.y = Mathf.Min(0, _frameVelocity.y); // get the smaller number between 0 and the vertical velocity (so basically set vertical velocity to 0 ig)
+        }
+
+        if (!_grounded && groundHit) // player touches ground
+        {
+            Debug.Log("is grounded");
+
+            _grounded = true;
+            _coyoteUsable = true;
+            _bufferedJumpUsable = true;
+            _jumpEndedEarly = false;
+            GroundedChanged?.Invoke(true, Mathf.Abs(_frameVelocity.y));
+        }
+        else if (_grounded && !groundHit) // player leaves ground
+        {
+            Debug.Log("has left ground");
+            _grounded = false;
+            _frameLeftGrounded = _time;
+            GroundedChanged?.Invoke(false, 0);
+        }
+
+        if (!_walled && wallHit)
+        {
+            Debug.Log("has touched wall");
+
+            _walled = true;
+            _coyoteUsable = true;
+            _bufferedJumpUsable = true;
+            _jumpEndedEarly = false;
+            WalledChanged?.Invoke(true, Mathf.Abs(_frameVelocity.x));
+        }
+        else if (_walled && !wallHit)
+        {
+            Debug.Log("stopped touching wall");
+            _walled = false;
+            _frameLeftWall = _time;
+            WalledChanged?.Invoke(false, 0);
+        }
+        #endregion
+    }
+
+    private bool IsHoldingWall() // checks to see if there's input to hold onto wall (in the correct direction)
+    {
+        //if (!_walled) return false;
+        Vector3 pos = transform.position + _col.center; pos.z = 0;
+        Vector3 dir = GetInput.AimPlayer.normalized; dir.z = 0;// the player's input direction
+
+        Ray ray = new Ray(pos, dir * 0.75f);
+            Debug.DrawRay(pos, dir * 0.75f, Color.magenta);
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            Wall wall = hit.collider.gameObject.GetComponentInParent<Wall>();
+
+            if (wall != null)
+            {
+                _frameVelocity.y = 0;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return false;
+    }    
+    
+    //private void HandleWallSlide()
+    //{
+    //    if (_walled && !IsHoldingWall())
+    //    {
+    //        _frameVelocity.y = Mathf.Clamp(_frameVelocity.y, -_stats.WallSlideSpeed, float.MaxValue);
+    //    }
+    //}
+    #endregion
 
     #region Jump
     private bool _jumpToBeConsumed; // I found the original name of the variable to be a bit confusing---basically describes if theres a jump to execute
@@ -142,6 +252,8 @@ public class PlayerMovement : MonoBehaviour
         if (!_jumpToBeConsumed && !HasBufferedJump) return;
         if (_grounded || CanUseCoyote) ExecuteJump();
 
+        // special case: if hitting a wall right after jumping from the ground, ignore wall..? idk just do something to make it stop sticking
+
         _jumpToBeConsumed = false;
     }
     private void ExecuteJump()
@@ -153,113 +265,14 @@ public class PlayerMovement : MonoBehaviour
         _frameVelocity.y = _stats.JumpPower;
         Jumped?.Invoke();
     }
-    #endregion
 
-    #region Collisions
+    private bool _wallJumpToBeConsumed;
+    private Vector3 _wallJumpDirection;
 
-    private float _frameLeftGrounded = float.MinValue;
-    private bool _grounded = true;
-
-    private float _frameLeftWall = float.MinValue;  
-    private bool _walled;
-    private void CheckCollisions()
+    // use coyote time here
+    private void WallJump() 
     {
-        #region ignore
-        //Vector3 p1 = transform.position + _col.center + Vector3.up * -_col.height * 0.5f; p1.z= 0f; // point at the bottom (start) of the capsule
-        //Vector3 p2 = p1 + Vector3.up * _col.height; p2.z= 0f; // point at the top (end) of the capsule
-
-        //// Ground, Ceiling, Wall
-        //bool groundHit = Physics.CapsuleCast(p1, p2, _col.radius, Vector3.down, _stats.GrounderDistance, ~_stats.PlayerLayer);
-        //bool ceilingHit = Physics.CapsuleCast(p1, p2, _col.radius, Vector3.up, _stats.GrounderDistance, ~_stats.PlayerLayer);
-
-        //Vector3 p1Wall = p1 + Vector3.up * _col.height / 4; p1Wall.z = 0f;// start point is a quarter of its og height higher
-        //Vector3 p2Wall = p2 - Vector3.up * _col.height / 4; p2Wall.z = 0f;// end point is a quarter of its og height lower
-
-        //bool wallHitL = Physics.CapsuleCast(p1Wall, p2Wall, _col.radius, Vector3.left, _stats.WalledDistance, ~_stats.PlayerLayer);
-        //bool wallHitR = Physics.CapsuleCast(p1Wall, p2Wall, _col.radius, Vector3.right, _stats.WalledDistance, ~_stats.PlayerLayer);
-        //bool wallHit = wallHitL || wallHitR;
-
-        //if (ceilingHit)
-        //{
-        //    _frameVelocity.y = Mathf.Min(0, _frameVelocity.y); // get the smaller number between 0 and the vertical velocity (so basically set vertical velocity to 0 ig)
-        //}
-
-        //if (!_grounded && groundHit) // player touches ground
-        //{
-        //    Debug.Log("is grounded");
-
-        //    _grounded = true;
-        //    _coyoteUsable = true;
-        //    _bufferedJumpUsable = true;
-        //    _jumpEndedEarly = false;
-        //    GroundedChanged?.Invoke(true, Mathf.Abs(_frameVelocity.y));
-        //}
-        //else if (_grounded && !groundHit) // player leaves ground
-        //{
-        //    Debug.Log("has left ground");
-        //    _grounded = false;
-        //    _frameLeftGrounded = _time;
-        //    GroundedChanged?.Invoke(false, 0);
-        //}
-
-        //if (!_walled && wallHit)
-        //{
-        //    Debug.DrawCapsule(p1Wall, Quaternion.identity, _col.height / 2, _col.radius, Color.magenta, true);
-        //    Debug.Log("has touched wall");
-
-        //    _walled = true;
-        //    _coyoteUsable = true;
-        //    _bufferedJumpUsable = true;
-        //    _jumpEndedEarly = false;
-        //    WalledChanged?.Invoke(true, Mathf.Abs(_frameVelocity.x));
-        //}
-        //else if (_walled && !wallHit)
-        //{
-        //    Debug.Log("stopped touching wall");
-        //    _walled = false;
-        //    _frameLeftWall = _time;
-        //    WalledChanged?.Invoke(false, 0);
-        //}
-        #endregion
-
-        _grounded = Physics.CheckSphere(transform.position, 0.5f, ~_stats.PlayerLayer);
-        if (_grounded) Debug.Log("wow you're grounded");
-    }
-
-    private bool _isWallSliding;
-
-    private bool IsHoldingWall() // checks to see if there's input to hold onto wall (in the correct direction)
-    {
-        //if (!_walled) return false;
-        Vector3 pos = _col.center; pos.z = 0;
-        Vector3 dir = GetInput.AimPlayer.normalized; dir.z = 0;// the player's input direction
-
-        Ray ray = new Ray(pos, dir * 5);
-            Debug.DrawRay(pos, dir * 5, Color.magenta);
-        if (Physics.Raycast(ray, out RaycastHit hit))
-        {
-            Wall wall = hit.collider.gameObject.GetComponent<Wall>();
-
-            if (wall != null)
-            {
-                Debug.Log("wall found");
-                return true;
-            }
-        }
-        return false;
-    }    
-    private void HandleWallSlide()
-    {
-        if (_walled && !IsHoldingWall())
-        {
-            _isWallSliding = true;
-            Debug.Log("player is wall sliding trust me brah");
-            // do the actual stuff where the player slides down the wall
-        }
-        else
-        {
-            _isWallSliding = false;
-        }
+        
     }
     #endregion
 
