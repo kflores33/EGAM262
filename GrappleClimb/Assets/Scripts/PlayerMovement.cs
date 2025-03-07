@@ -116,7 +116,6 @@ public class PlayerMovement : MonoBehaviour
     bool CanWallSlide => _walled && !IsHoldingWall() && !_grounded;
     private void HandleGravity()
     {
-
         if (_grounded && _frameVelocity.y <= 0f)
         {
             _frameVelocity.y = _stats.GroundingForce;
@@ -145,17 +144,15 @@ public class PlayerMovement : MonoBehaviour
 
     private void CheckCollisions()
     {
-        #region ignore
         Vector3 p1 = transform.position + _col.center + Vector3.up * (-_col.height * 0.5f + _col.radius); /* half of collider height + radius */ p1.z = 0f; // point at the bottom (start) of the capsule
         Vector3 p2 = p1 + Vector3.up * (_col.height - _col.radius*2.0f); p2.z = 0f; // point at the top (end) of the capsule
 
         // Ground, Ceiling
         bool groundHit = Physics.OverlapCapsule(p1 - new Vector3(0.0f, _stats.GrounderDistance, 0.0f), p2, _col.radius*0.9f, ~_stats.PlayerLayer).Length > 0;
         bool ceilingHit = Physics.OverlapCapsule(p1, p2 + new Vector3(0.0f, _stats.GrounderDistance, 0.0f), _col.radius * 0.9f, ~_stats.PlayerLayer).Length > 0;
-
-        Vector3 rayP1 = transform.position + _col.center + Vector3.left * (_col.radius * 1.25f);
-        Vector3 rayP2 = rayP1 + Vector3.right * ((_col.radius * 1.25f) * 2 );
-        //Debug.DrawLine( rayP1, rayP2, Color.magenta, 0.5f );
+            //Vector3 rayP1 = transform.position + _col.center + Vector3.left * (_col.radius * 1.25f);
+            //Vector3 rayP2 = rayP1 + Vector3.right * ((_col.radius * 1.25f) * 2 );
+            //Debug.DrawLine( rayP1, rayP2, Color.magenta, 0.5f );
         Vector3 boxDimensions = new Vector3(1.25f, 1, 1);
 
         bool wallHit = Physics.OverlapBox(_col.center, boxDimensions, Quaternion.identity, ~_stats.PlayerLayer).Length > 0;
@@ -200,7 +197,6 @@ public class PlayerMovement : MonoBehaviour
             _frameLeftWall = _time;
             WalledChanged?.Invoke(false, 0);
         }
-        #endregion
     }
 
     private bool IsHoldingWall() // checks to see if there's input to hold onto wall (in the correct direction)
@@ -217,7 +213,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (wall != null)
             {
-                _frameVelocity.y = 0;
+                _frameVelocity.y = 0; _rb.angularVelocity = Vector3.zero;
                 return true;
             }
             else
