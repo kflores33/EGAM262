@@ -79,7 +79,7 @@ public class PlayerMovement : MonoBehaviour
         if (_frameInput.JumpDown)
         {
             _jumpDownPerformed = true;
-            Debug.Log("i jumped");
+            //Debug.Log("i jumped");
             _jumpToBeConsumed = true;
             _timeJumpWasPressed = _time;
         }
@@ -164,7 +164,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (!_grounded && groundHit) // player touches ground
         {
-            Debug.Log("is grounded");
+            //Debug.Log("is grounded");
 
             _grounded = true;
             _coyoteUsable = true;
@@ -174,7 +174,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (_grounded && !groundHit) // player leaves ground
         {
-            Debug.Log("has left ground");
+            //Debug.Log("has left ground");
             _grounded = false;
             _frameLeftGrounded = _time;
             GroundedChanged?.Invoke(false, 0);
@@ -182,7 +182,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (!_walled && wallHit)
         {
-            Debug.Log("has touched wall");
+            //Debug.Log("has touched wall");
 
             _walled = true;
             _coyoteUsable = true;
@@ -192,7 +192,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (_walled && !wallHit)
         {
-            Debug.Log("stopped touching wall");
+            //Debug.Log("stopped touching wall");
             _walled = false;
             _frameLeftWall = _time;
             WalledChanged?.Invoke(false, 0);
@@ -246,7 +246,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!_jumpEndedEarly && !_grounded && !_frameInput.JumpHeld && _rb.linearVelocity.y > 0) _jumpEndedEarly = true;
         if (!_jumpToBeConsumed && !HasBufferedJump) return;
-        if (_grounded || CanUseCoyote) ExecuteJump();
+        if (_grounded || CanUseCoyote || _walled) ExecuteJump();
 
         // special case: if hitting a wall right after jumping from the ground, ignore wall..? idk just do something to make it stop sticking
 
