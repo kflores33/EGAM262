@@ -136,6 +136,8 @@ public class PlayerMovement : MonoBehaviour
     private float _frameLeftWall = float.MinValue;  
     private bool _walled;
 
+    private Vector3 _lastWalledPos;
+
     //private void OnDrawGizmosSelected()
     //{
     //    Gizmos.color = Color.yellow;
@@ -150,9 +152,9 @@ public class PlayerMovement : MonoBehaviour
         // Ground, Ceiling
         bool groundHit = Physics.OverlapCapsule(p1 - new Vector3(0.0f, _stats.GrounderDistance, 0.0f), p2, _col.radius*0.9f, ~_stats.PlayerLayer).Length > 0;
         bool ceilingHit = Physics.OverlapCapsule(p1, p2 + new Vector3(0.0f, _stats.GrounderDistance, 0.0f), _col.radius * 0.9f, ~_stats.PlayerLayer).Length > 0;
-            //Vector3 rayP1 = transform.position + _col.center + Vector3.left * (_col.radius * 1.25f);
-            //Vector3 rayP2 = rayP1 + Vector3.right * ((_col.radius * 1.25f) * 2 );
-            //Debug.DrawLine( rayP1, rayP2, Color.magenta, 0.5f );
+            Vector3 rayP1 = transform.position + _col.center + Vector3.left * (_col.radius * 1.25f);
+            Vector3 rayP2 = rayP1 + Vector3.right * ((_col.radius * 1.25f) * 2);
+            Debug.DrawLine(rayP1, rayP2, Color.magenta, 0.5f);
         Vector3 boxDimensions = new Vector3(1.25f, 1, 1);
 
         bool wallHit = Physics.OverlapBox(_col.center, boxDimensions, Quaternion.identity, ~_stats.PlayerLayer).Length > 0;
@@ -205,8 +207,8 @@ public class PlayerMovement : MonoBehaviour
         Vector3 pos = transform.position + _col.center; pos.z = 0;
         Vector3 dir = GetInput.AimPlayer.normalized; dir.z = 0;// the player's input direction
 
-        Ray ray = new Ray(pos, dir * 0.75f);
-            Debug.DrawRay(pos, dir * 0.75f, Color.magenta);
+        Ray ray = new Ray(pos, dir * 0.9f);
+            Debug.DrawRay(pos, dir * 0.9f, Color.magenta);
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             Wall wall = hit.collider.gameObject.GetComponentInParent<Wall>();
@@ -214,6 +216,7 @@ public class PlayerMovement : MonoBehaviour
             if (wall != null)
             {
                 _frameVelocity.y = 0; _rb.angularVelocity = Vector3.zero;
+                _lastWalledPos = hit.transform.position;
                 return true;
             }
             else
@@ -246,7 +249,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!_jumpEndedEarly && !_grounded && !_frameInput.JumpHeld && _rb.linearVelocity.y > 0) _jumpEndedEarly = true;
         if (!_jumpToBeConsumed && !HasBufferedJump) return;
-        if (_grounded || CanUseCoyote || _walled) ExecuteJump();
+        if (_grounded /*|| CanUseCoyote*/) ExecuteJump();
 
         // special case: if hitting a wall right after jumping from the ground, ignore wall..? idk just do something to make it stop sticking
 
@@ -268,7 +271,7 @@ public class PlayerMovement : MonoBehaviour
     // use coyote time here
     private void WallJump() 
     {
-        
+        // add force in direction from _lastWalledPos
     }
     #endregion
 
