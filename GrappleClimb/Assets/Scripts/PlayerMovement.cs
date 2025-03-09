@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using Unity.VisualScripting;
+using System.Linq;
+using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 using UnityEngine.Events;
+using UnityEngine.UIElements;
 
 // referenced scripts from this repo: https://github.com/Matthew-J-Spencer/Ultimate-2D-Controller/blob/main/Scripts/PlayerController.cs
 // and this video: https://www.youtube.com/watch?v=O6VX6Ro7EtA&list=TLPQMDQwMzIwMjXkLjMbxR-3Jg&index=2
+// this too: https://youtu.be/EOSjfRuh7x4?si=cNBgw-ogSuHQ6lLL
 public struct FrameInput
 {
     public bool JumpDown;
@@ -34,11 +37,58 @@ public class PlayerMovement : MonoBehaviour
 
     private float _time;
 
+    float ColliderInstanceId;
+
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
         _col = GetComponentInChildren<CapsuleCollider>();
+
+        // Ghost collision prevention
+        _col.hasModifiableContacts = true;
+        _col.providesContacts = true;
+        ColliderInstanceId = _col.GetInstanceID();
+        Physics.ContactModifyEventCCD += PreventGhostCollisionCCD;
     }
+
+    #region Ghost Collision Prevention Stuff
+    // video referenced: https://youtu.be/GqCyz7aoar8?si=2JDAnBqpCeNPCaRe
+    public enum PreventionMode
+    {
+        Simple,
+        None
+    }
+
+    public PreventionMode GhostColPreventionMode;
+    private void PreventGhostCollisionCCD(PhysicsScene scene, NativeArray<ModifiableContactPair> contactPairs)
+    {
+        ModifiableContactPair[] playerContactPairs =
+        contactPairs.Where(pair => pair.colliderInstanceID == ColliderInstanceId).ToArray();
+
+        switch (GhostColPreventionMode)
+        {
+            case PreventionMode.Simple:
+                SimpleGhostColPrevention(playerContactPairs); return;
+            case PreventionMode.None:
+                default:
+                break;
+        }
+    }
+
+    private void SimpleGhostColPrevention(ModifiableContactPair[] playerContactPairs)
+    {
+        foreach (ModifiableContactPair pair in playerContactPairs)
+        {
+            for (int i = 0; i < pair.contactCount; i++)
+            {
+                if (pair.GetSeparation(i) > 0) // if the distance between the colliders is greater than 0, pverride the normal of the object
+                {
+                    pair.SetNormal(i, Vector3.up);
+                }
+            }
+        }
+    }
+    #endregion
 
     private void Update()
     {
@@ -138,32 +188,30 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector3 _lastWalledPos;
 
-    //private void OnDrawGizmosSelected()
-    //{
-    //    Gizmos.color = Color.yellow;
-    //    Gizmos.DrawWireCube(transform.position + _col.center, new Vector3(1.25f, 1, 1));
-    //}
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.blue;
 
+        Vector3 boxDimensions = new Vector3(1.25f, 0.75f, 1);
+            //Gizmos.DrawWireCube(transform.position + _col.center, boxDimensions);
+    }
     private void CheckCollisions()
     {
         Vector3 p1 = transform.position + _col.center + Vector3.up * (-_col.height * 0.5f + _col.radius); /* half of collider height + radius */ p1.z = 0f; // point at the bottom (start) of the capsule
         Vector3 p2 = p1 + Vector3.up * (_col.height - _col.radius*2.0f); p2.z = 0f; // point at the top (end) of the capsule
 
         // Ground, Ceiling
-        bool groundHit = Physics.OverlapCapsule(p1 - new Vector3(0.0f, _stats.GrounderDistance, 0.0f), p2, _col.radius*0.9f, ~_stats.PlayerLayer).Length > 0;
-        bool ceilingHit = Physics.OverlapCapsule(p1, p2 + new Vector3(0.0f, _stats.GrounderDistance, 0.0f), _col.radius * 0.9f, ~_stats.PlayerLayer).Length > 0;
-            Vector3 rayP1 = transform.position + _col.center + Vector3.left * (_col.radius * 1.25f);
-            Vector3 rayP2 = rayP1 + Vector3.right * ((_col.radius * 1.25f) * 2);
-            Debug.DrawLine(rayP1, rayP2, Color.magenta, 0.5f);
-        Vector3 boxDimensions = new Vector3(1.25f, 1, 1);
+        bool groundHit = Physics.OverlapCapsule(p1 - new Vector3(0.0f, _stats.GrounderDistance, 0.0f), p2, _col.radius*0.95f, ~_stats.PlayerLayer).Length > 0;
+        bool ceilingHit = Physics.OverlapCapsule(p1, p2 + new Vector3(0.0f, _stats.GrounderDistance, 0.0f), _col.radius * 0.95f, ~_stats.PlayerLayer).Length > 0;
 
-        bool wallHit = Physics.OverlapBox(_col.center, boxDimensions, Quaternion.identity, ~_stats.PlayerLayer).Length > 0;
-
+        #region Cieling Hit & Grounded check
+        // cieling hit check
         if (ceilingHit)
         {
             _frameVelocity.y = Mathf.Min(0, _frameVelocity.y); // get the smaller number between 0 and the vertical velocity (so basically set vertical velocity to 0 ig)
         }
 
+        // grounded check
         if (!_grounded && groundHit) // player touches ground
         {
             //Debug.Log("is grounded");
@@ -181,11 +229,22 @@ public class PlayerMovement : MonoBehaviour
             _frameLeftGrounded = _time;
             GroundedChanged?.Invoke(false, 0);
         }
+        #endregion
 
+        // Wall
+            // debug purposes
+            Vector3 rayP1 = transform.position + _col.center + Vector3.left * (_col.radius * 1.25f);
+            Vector3 rayP2 = rayP1 + Vector3.right * ((_col.radius * 1.25f) * 2);
+            //Debug.DrawLine(rayP1, rayP2, Color.magenta, 0.5f);
+        // actual check
+        Vector3 boxDimensions = new Vector3(1.25f, 0.75f, 1);
+        bool wallHit = Physics.OverlapBox(transform.position + _col.center, boxDimensions, Quaternion.identity, ~_stats.PlayerLayer).Length > 0;
+        Collider[] wallCols = Physics.OverlapBox(transform.position + _col.center, boxDimensions, Quaternion.identity, ~_stats.PlayerLayer);
+
+        // walled check
         if (!_walled && wallHit)
         {
             //Debug.Log("has touched wall");
-
             _walled = true;
             _coyoteUsable = true;
             _bufferedJumpUsable = true;
@@ -198,6 +257,29 @@ public class PlayerMovement : MonoBehaviour
             _walled = false;
             _frameLeftWall = _time;
             WalledChanged?.Invoke(false, 0);
+        }
+
+        // can wall jump
+        foreach (Collider col in wallCols)
+        {
+            //if (col.GetComponentInParent<Wall>() == null) return;
+            Vector3 closestPoint = col.ClosestPoint(_col.transform.position); // returns closest point to player collider
+            Vector3 posDiff = (closestPoint - _col.transform.position); // the difference between positions
+            Vector3 overlapDirection = posDiff.normalized;
+
+            RaycastHit hit;
+            int layerMask = _stats.PlayerLayer;  // Set to something that will only hit your object
+            float raycastDistance = 5.0f; // something greater than your object's largest radius, 
+                                          // so that the ray doesn't start inside of your object
+            Vector3 rayStart = _col.transform.position + overlapDirection * raycastDistance;
+            Vector3 rayDirection = -overlapDirection;
+
+            if (Physics.Raycast(rayStart, rayDirection, out hit, Mathf.Infinity, layerMask))
+            {
+                //Debug.Log(hit.normal);
+                Debug.DrawRay(hit.point, hit.normal, Color.blue, 1.25f);
+                //Debug.Log(hit.transform.position);
+            }
         }
     }
 
@@ -272,6 +354,7 @@ public class PlayerMovement : MonoBehaviour
     private void WallJump() 
     {
         // add force in direction from _lastWalledPos
+
     }
     #endregion
 
