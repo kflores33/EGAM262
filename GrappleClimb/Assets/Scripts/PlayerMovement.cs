@@ -233,13 +233,29 @@ public class PlayerMovement : MonoBehaviour
         #endregion
 
         // Wall
-            // debug purposes
             Vector3 rayP1 = transform.position + _col.center + Vector3.left * (_col.radius * 1.25f);
-            Vector3 rayP2 = rayP1 + Vector3.right * ((_col.radius * 1.25f) * 2);
-            //Debug.DrawLine(rayP1, rayP2, Color.magenta, 0.5f);
+            Vector3 rayP2 = rayP1 + Vector3.right * ((_col.radius * 1.25f) * 2); // radius of collider * 1.25 * 2 (two times the length of slightly wider than radius of collider)
+                //Debug.DrawLine(rayP1, rayP2, Color.magenta, 0.5f);
         // actual check
         Vector3 boxDimensions = new Vector3(1.25f, 0.75f, 1);
         bool wallHit = Physics.OverlapBox(transform.position + _col.center, boxDimensions, Quaternion.identity, ~_stats.PlayerLayer).Length > 0;
+
+        if (Physics.Linecast(rayP1, rayP2, out RaycastHit hitInfo, ~_stats.PlayerLayer))
+        {
+            if (_grounded) return;
+
+            _canWallJump = true;
+            _wallJumpVector = hitInfo.normal * _stats.MaxSpeed;
+            Debug.DrawRay(hitInfo.point, hitInfo.normal, Color.blue, 1.25f);
+        }
+        else if(Physics.Linecast(rayP2, rayP1, out RaycastHit hitInfo2, ~_stats.PlayerLayer))
+        {
+            if (_grounded) return;
+
+            _canWallJump = true;
+            _wallJumpVector = hitInfo2.normal * _stats.MaxSpeed;
+            Debug.DrawRay(hitInfo2.point, hitInfo2.normal, Color.blue, 1.25f);
+        }
 
         // walled check
         if (!_walled && wallHit)
@@ -261,26 +277,6 @@ public class PlayerMovement : MonoBehaviour
 
         // unity discussion (fixing inconsistent raycast normals returned by boxcast/overlapbox): https://discussions.unity.com/t/dealing-with-raycast-corner-normals/765598/2
         // can wall jump
-
-        if (Physics.BoxCast(transform.position + _col.center, boxDimensions, Vector3.zero, out RaycastHit castHit, Quaternion.identity, ~_stats.PlayerLayer))
-        {
-            Vector3 dir = transform.position - _lastPos;
-
-            float threshold = -0.98f;
-            if (Vector3.Dot(dir, castHit.normal) <= threshold)
-            {
-                Vector3 rayOrigin = transform.position + _col.center;
-                Vector3 rayDir = (castHit.point - rayOrigin).normalized;
-                float rayDistance = Vector3.Distance(castHit.point, rayOrigin) + 0.5f;
-                Ray ray = new Ray(rayOrigin, rayDir);
-
-                if(castHit.collider.Raycast(ray, out RaycastHit hitInfo, Vector3.Distance(castHit.point, rayOrigin) + Physics.defaultContactOffset))
-                {
-                    castHit.normal = hitInfo.normal;
-                    //Debug.DrawRay(closestPoint, castHit.normal, Color.blue, 1.25f);
-                }
-            }
-        }
     }
 
     private bool IsHoldingWall() // checks to see if there's input to hold onto wall (in the correct direction)
@@ -297,7 +293,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (wall != null)
             {
-                _frameVelocity.y = 0; _rb.angularVelocity = Vector3.zero;
+                _frameVelocity = Vector3.zero; _rb.angularVelocity = Vector3.zero;
                 return true;
             }
             else
@@ -330,7 +326,8 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!_jumpEndedEarly && !_grounded && !_frameInput.JumpHeld && _rb.linearVelocity.y > 0) _jumpEndedEarly = true;
         if (!_jumpToBeConsumed && !HasBufferedJump) return;
-        if (_grounded /*|| CanUseCoyote*/) ExecuteJump();
+        if(_walled && _canWallJump) ExecuteWallJump();
+        else if (_grounded /*|| CanUseCoyote*/) ExecuteJump();
 
         // special case: if hitting a wall right after jumping from the ground, ignore wall..? idk just do something to make it stop sticking
 
@@ -346,14 +343,20 @@ public class PlayerMovement : MonoBehaviour
         Jumped?.Invoke();
     }
 
-    private bool _wallJumpToBeConsumed;
-    private Vector3 _wallJumpDirection;
-
-    // use coyote time here
-    private void WallJump() 
+    bool _canWallJump;
+    Vector3 _wallJumpVector;
+    private void ExecuteWallJump() 
     {
         // add force in direction from _lastWalledPos
+        _jumpEndedEarly = false;
+        _timeJumpWasPressed = 0;
+        _bufferedJumpUsable = false;
+        _coyoteUsable = false;
 
+        _frameVelocity.y = 0;
+        _frameVelocity.Normalize();
+        _frameVelocity = _wallJumpVector;
+        _frameVelocity.y = _stats.JumpPower;
     }
     #endregion
 
