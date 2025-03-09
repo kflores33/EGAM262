@@ -152,6 +152,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleHorizontalDirection()
     {
+        _lastPos = transform.position;
+
         if (_frameInput.Move.x == 0) // if no horizontal input, decelerate
         {
             var deceleration = _grounded ? _stats.GroundDeceleration : _stats.AirDeceleration;
@@ -163,7 +165,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    bool CanWallSlide => _walled && !IsHoldingWall() && !_grounded;
     private void HandleGravity()
     {
         if (_grounded && _frameVelocity.y <= 0f)
@@ -186,7 +187,7 @@ public class PlayerMovement : MonoBehaviour
     private float _frameLeftWall = float.MinValue;  
     private bool _walled;
 
-    private Vector3 _lastWalledPos;
+    private Vector3 _lastPos;
 
     void OnDrawGizmos()
     {
@@ -239,7 +240,6 @@ public class PlayerMovement : MonoBehaviour
         // actual check
         Vector3 boxDimensions = new Vector3(1.25f, 0.75f, 1);
         bool wallHit = Physics.OverlapBox(transform.position + _col.center, boxDimensions, Quaternion.identity, ~_stats.PlayerLayer).Length > 0;
-        Collider[] wallCols = Physics.OverlapBox(transform.position + _col.center, boxDimensions, Quaternion.identity, ~_stats.PlayerLayer);
 
         // walled check
         if (!_walled && wallHit)
@@ -259,26 +259,26 @@ public class PlayerMovement : MonoBehaviour
             WalledChanged?.Invoke(false, 0);
         }
 
+        // unity discussion (fixing inconsistent raycast normals returned by boxcast/overlapbox): https://discussions.unity.com/t/dealing-with-raycast-corner-normals/765598/2
         // can wall jump
-        foreach (Collider col in wallCols)
+
+        if (Physics.BoxCast(transform.position + _col.center, boxDimensions, Vector3.zero, out RaycastHit castHit, Quaternion.identity, ~_stats.PlayerLayer))
         {
-            //if (col.GetComponentInParent<Wall>() == null) return;
-            Vector3 closestPoint = col.ClosestPoint(_col.transform.position); // returns closest point to player collider
-            Vector3 posDiff = (closestPoint - _col.transform.position); // the difference between positions
-            Vector3 overlapDirection = posDiff.normalized;
+            Vector3 dir = transform.position - _lastPos;
 
-            RaycastHit hit;
-            int layerMask = _stats.PlayerLayer;  // Set to something that will only hit your object
-            float raycastDistance = 5.0f; // something greater than your object's largest radius, 
-                                          // so that the ray doesn't start inside of your object
-            Vector3 rayStart = _col.transform.position + overlapDirection * raycastDistance;
-            Vector3 rayDirection = -overlapDirection;
-
-            if (Physics.Raycast(rayStart, rayDirection, out hit, Mathf.Infinity, layerMask))
+            float threshold = -0.98f;
+            if (Vector3.Dot(dir, castHit.normal) <= threshold)
             {
-                //Debug.Log(hit.normal);
-                Debug.DrawRay(hit.point, hit.normal, Color.blue, 1.25f);
-                //Debug.Log(hit.transform.position);
+                Vector3 rayOrigin = transform.position + _col.center;
+                Vector3 rayDir = (castHit.point - rayOrigin).normalized;
+                float rayDistance = Vector3.Distance(castHit.point, rayOrigin) + 0.5f;
+                Ray ray = new Ray(rayOrigin, rayDir);
+
+                if(castHit.collider.Raycast(ray, out RaycastHit hitInfo, Vector3.Distance(castHit.point, rayOrigin) + Physics.defaultContactOffset))
+                {
+                    castHit.normal = hitInfo.normal;
+                    //Debug.DrawRay(closestPoint, castHit.normal, Color.blue, 1.25f);
+                }
             }
         }
     }
@@ -298,7 +298,6 @@ public class PlayerMovement : MonoBehaviour
             if (wall != null)
             {
                 _frameVelocity.y = 0; _rb.angularVelocity = Vector3.zero;
-                _lastWalledPos = hit.transform.position;
                 return true;
             }
             else
