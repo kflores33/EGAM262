@@ -176,7 +176,9 @@ public class PlayerMovement : MonoBehaviour
             var inAirGravity = _stats.FallAcceleration;
             if (_jumpEndedEarly && _frameVelocity.y > 0) inAirGravity *= _stats.JumpEndEarlyGravityModifier;
             _frameVelocity.y = Mathf.MoveTowards(_frameVelocity.y, -_stats.MaxFallSpeed, inAirGravity * Time.fixedDeltaTime);
-        }        
+        }   
+        
+        HandleWallSlide();
     }
 
     #region Collisions
@@ -237,7 +239,7 @@ public class PlayerMovement : MonoBehaviour
             Vector3 rayP2 = rayP1 + Vector3.right * ((_col.radius * 1.25f) * 2); // radius of collider * 1.25 * 2 (two times the length of slightly wider than radius of collider)
                 //Debug.DrawLine(rayP1, rayP2, Color.magenta, 0.5f);
         // actual check
-        Vector3 boxDimensions = new Vector3(1.25f, 0.75f, 1);
+        Vector3 boxDimensions = new Vector3(0.505f, 0.5f, 0.5f);
         bool wallHit = Physics.OverlapBox(transform.position + _col.center, boxDimensions, Quaternion.identity, ~_stats.PlayerLayer).Length > 0;
 
         if (Physics.Linecast(rayP1, rayP2, out RaycastHit hitInfo, ~_stats.PlayerLayer))
@@ -246,7 +248,7 @@ public class PlayerMovement : MonoBehaviour
 
             _canWallJump = true;
             _wallJumpVector = hitInfo.normal * _stats.MaxSpeed;
-            Debug.DrawRay(hitInfo.point, hitInfo.normal, Color.blue, 1.25f);
+            //Debug.DrawRay(hitInfo.point, hitInfo.normal, Color.blue, 1.25f);
         }
         else if(Physics.Linecast(rayP2, rayP1, out RaycastHit hitInfo2, ~_stats.PlayerLayer))
         {
@@ -254,7 +256,7 @@ public class PlayerMovement : MonoBehaviour
 
             _canWallJump = true;
             _wallJumpVector = hitInfo2.normal * _stats.MaxSpeed;
-            Debug.DrawRay(hitInfo2.point, hitInfo2.normal, Color.blue, 1.25f);
+            //Debug.DrawRay(hitInfo2.point, hitInfo2.normal, Color.blue, 1.25f);
         }
 
         // walled check
@@ -275,6 +277,9 @@ public class PlayerMovement : MonoBehaviour
             WalledChanged?.Invoke(false, 0);
         }
 
+        if (_walled && IsHoldingWall() && !_grounded) _rb.isKinematic = true;
+        else { _rb.isKinematic = false; }
+
         // unity discussion (fixing inconsistent raycast normals returned by boxcast/overlapbox): https://discussions.unity.com/t/dealing-with-raycast-corner-normals/765598/2
         // can wall jump
     }
@@ -285,15 +290,14 @@ public class PlayerMovement : MonoBehaviour
         Vector3 pos = transform.position + _col.center; pos.z = 0;
         Vector3 dir = GetInput.AimPlayer.normalized; dir.z = 0;// the player's input direction
 
-        Ray ray = new Ray(pos, dir * 0.9f);
-            Debug.DrawRay(pos, dir * 0.9f, Color.magenta);
+        Ray ray = new Ray(pos, dir * 0.6f);
+            Debug.DrawRay(pos, dir * 0.6f, Color.magenta);
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             Wall wall = hit.collider.gameObject.GetComponentInParent<Wall>();
 
             if (wall != null)
             {
-                _frameVelocity = Vector3.zero; _rb.angularVelocity = Vector3.zero;
                 return true;
             }
             else
@@ -302,15 +306,15 @@ public class PlayerMovement : MonoBehaviour
             }
         }
         return false;
-    }    
-    
-    //private void HandleWallSlide()
-    //{
-    //    if (_walled && !IsHoldingWall())
-    //    {
-    //        _frameVelocity.y = Mathf.Clamp(_frameVelocity.y, -_stats.WallSlideSpeed, float.MaxValue);
-    //    }
-    //}
+    }
+
+    private void HandleWallSlide()
+    {
+        if (_walled && !IsHoldingWall() && !_grounded)
+        {
+            _frameVelocity.y = Mathf.Clamp(_frameVelocity.y, -_stats.WallSlideSpeed, float.MaxValue);
+        }
+    }
     #endregion
 
     #region Jump

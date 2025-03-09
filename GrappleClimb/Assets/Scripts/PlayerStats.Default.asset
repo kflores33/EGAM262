@@ -22,7 +22,7 @@ MonoBehaviour:
   GroundingForce: -0.09
   GrounderDistance: 0.05
   WalledDistance: 0.1
-  WallSlideSpeed: 2
+  WallSlideSpeed: 5.2
   JumpPower: 50
   WallJumpPower: 36
   MaxFallSpeed: 40
