@@ -147,7 +147,7 @@ public class PlayerMovement : MonoBehaviour
         HandleGravity();
         HandleJump();
 
-        ApplyMovement();
+        if(!_rb.isKinematic) ApplyMovement();
     }
 
     private void HandleHorizontalDirection()
@@ -207,7 +207,7 @@ public class PlayerMovement : MonoBehaviour
         bool groundHit = Physics.OverlapCapsule(p1 - new Vector3(0.0f, _stats.GrounderDistance, 0.0f), p2, _col.radius*0.95f, ~_stats.PlayerLayer).Length > 0;
         bool ceilingHit = Physics.OverlapCapsule(p1, p2 + new Vector3(0.0f, _stats.GrounderDistance, 0.0f), _col.radius * 0.95f, ~_stats.PlayerLayer).Length > 0;
 
-        #region Cieling Hit & Grounded check
+        #region Ceiling Hit & Grounded check
         // cieling hit check
         if (ceilingHit)
         {
@@ -232,6 +232,8 @@ public class PlayerMovement : MonoBehaviour
             _frameLeftGrounded = _time;
             GroundedChanged?.Invoke(false, 0);
         }
+
+        // if player is on ice, change grounding force, else, reset it back to normal
         #endregion
 
         // Wall

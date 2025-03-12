@@ -5,7 +5,8 @@ public class Wall : MonoBehaviour
     public enum WallType
     {
         Default,
-        Grappleable
+        Grappleable,
+        Ice
     }
     public WallType type;
 }

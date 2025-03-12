@@ -11,15 +11,21 @@ public class GameManager : MonoBehaviour
     public RectTransform scoreEntryParent;
     public GameObject scoreEntryPrefab;
 
-    PlayerMovement playerMovement;
-    float playerHeight = 0;
+    public GameObject endScreen;
+    bool _canShowEndScreen;
 
-    bool gameIsRunning;
+    PlayerMovement _playerMovement;
+    float _playerHeight = 0;
+
+    bool _gameIsRunning;
+    float _timeLimitMax = 60f;
+    float _timeRemaining = 0;
 
     private void Awake()
     {
-        playerMovement = FindFirstObjectByType<PlayerMovement>();
-        gameIsRunning = true;
+        _playerMovement = FindFirstObjectByType<PlayerMovement>();
+        _gameIsRunning = true;
+        _timeRemaining = _timeLimitMax;
     }
 
     private void Start()
@@ -27,25 +33,47 @@ public class GameManager : MonoBehaviour
         UpdateScoreboard();
 
         submitScoreButton.onClick.AddListener(SubmitScore);
+
+        scoreboardContainer.SetActive(false);
+        endScreen.SetActive(false);
+
+        _canShowEndScreen = true;
     }
 
     private void Update()
     {
-        if (gameIsRunning)
+        if(_timeRemaining < 0)
         {
-            if (playerMovement.gameObject.transform.position.y >= playerHeight)
-            { playerHeight = playerMovement.gameObject.transform.position.y; }
+            _gameIsRunning=false;
+            Time.timeScale = 0;
+        }
+
+        if (_gameIsRunning)
+        {
+            _timeRemaining -= Time.deltaTime;   
+
+            if (_playerMovement.gameObject.transform.position.y >= _playerHeight)
+            { _playerHeight = _playerMovement.gameObject.transform.position.y; }
+        }
+        else
+        {
+            // show player name input, after submitting then show the highscore board
+            // show restart button
+            if(_canShowEndScreen) endScreen.SetActive(true);
         }
     }
 
     private void SubmitScore()
     {
+        _canShowEndScreen = false;
+        endScreen.SetActive(false);
+
         string playerName = playerNameInput.text.Trim();
         if (string.IsNullOrEmpty(playerName)) playerName = "?????";
 
         NameAndScore updatedScore = new NameAndScore
         {
-            Score = Mathf.FloorToInt(playerHeight),
+            Score = Mathf.FloorToInt(_playerHeight),
             Name = playerName
         };
 
