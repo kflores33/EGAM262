@@ -20,6 +20,7 @@ MonoBehaviour:
   GroundDeceleration: 35
   AirDeceleration: 30
   GroundingForce: -0.09
+  GroundingForceIce: -24
   GrounderDistance: 0.05
   WalledDistance: 0.1
   WallSlideSpeed: 5.2

@@ -12,14 +12,18 @@ public class GameManager : MonoBehaviour
     public GameObject scoreEntryPrefab;
 
     public GameObject endScreen;
+    public TMP_Text endScreenText;
     bool _canShowEndScreen;
 
     PlayerMovement _playerMovement;
     float _playerHeight = 0;
+    float _score = 0;
 
     bool _gameIsRunning;
-    float _timeLimitMax = 60f;
+    public float _timeLimitMax = 60f;
+    public float _maxHeight = 263;
     float _timeRemaining = 0;
+    public TMP_Text timeText;
 
     private void Awake()
     {
@@ -44,13 +48,24 @@ public class GameManager : MonoBehaviour
     {
         if(_timeRemaining < 0)
         {
-            _gameIsRunning=false;
+            _score = _playerHeight;
+            endScreenText.text = "Time's up!";
+
+            _gameIsRunning =false;
+            Time.timeScale = 0;
+        }
+        else if (_playerHeight >= _maxHeight) {
+            _score = _playerHeight + (Mathf.FloorToInt(_timeRemaining) * 10);
+            endScreenText.text = "Nice job!";
+
+            _gameIsRunning = false;
             Time.timeScale = 0;
         }
 
         if (_gameIsRunning)
         {
-            _timeRemaining -= Time.deltaTime;   
+            _timeRemaining -= Time.deltaTime;
+            DisplayTime(_timeRemaining);
 
             if (_playerMovement.gameObject.transform.position.y >= _playerHeight)
             { _playerHeight = _playerMovement.gameObject.transform.position.y; }
@@ -59,7 +74,7 @@ public class GameManager : MonoBehaviour
         {
             // show player name input, after submitting then show the highscore board
             // show restart button
-            if(_canShowEndScreen) endScreen.SetActive(true);
+            if (_canShowEndScreen) endScreen.SetActive(true);
         }
     }
 
@@ -73,7 +88,7 @@ public class GameManager : MonoBehaviour
 
         NameAndScore updatedScore = new NameAndScore
         {
-            Score = Mathf.FloorToInt(_playerHeight),
+            Score = Mathf.FloorToInt(_score),
             Name = playerName
         };
 
@@ -101,5 +116,13 @@ public class GameManager : MonoBehaviour
         }
 
         scoreboardContainer.SetActive(true);
+    }
+
+    void DisplayTime(float timeToDisplay)
+    {
+        timeToDisplay += 1;
+        float minutes = Mathf.FloorToInt(timeToDisplay / 60);
+        float seconds = Mathf.FloorToInt(timeToDisplay % 60);
+        timeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
     }
 }

@@ -12,6 +12,6 @@ public class ScoreSlot : MonoBehaviour
     {
         rankLabel.text = $"{rank}.";
         NameLabel.text = s.Name;
-        ScoreLabel.text = $"{s.Score:N0}m";
+        ScoreLabel.text = $"{s.Score:N0}";
     }
 }

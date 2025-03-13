@@ -169,7 +169,9 @@ public class PlayerMovement : MonoBehaviour
     {
         if (_grounded && _frameVelocity.y <= 0f)
         {
-            _frameVelocity.y = _stats.GroundingForce;
+            if (!_hasTouchedIce)_frameVelocity.y = _stats.GroundingForce;
+
+            else _frameVelocity.y = _stats.GroundingForceIce;
         }
         else
         {
@@ -189,6 +191,8 @@ public class PlayerMovement : MonoBehaviour
     private float _frameLeftWall = float.MinValue;  
     private bool _walled;
 
+    private bool _hasTouchedIce;
+
     private Vector3 _lastPos;
 
     void OnDrawGizmos()
@@ -204,7 +208,7 @@ public class PlayerMovement : MonoBehaviour
         Vector3 p2 = p1 + Vector3.up * (_col.height - _col.radius*2.0f); p2.z = 0f; // point at the top (end) of the capsule
 
         // Ground, Ceiling
-        bool groundHit = Physics.OverlapCapsule(p1 - new Vector3(0.0f, _stats.GrounderDistance, 0.0f), p2, _col.radius*0.95f, ~_stats.PlayerLayer).Length > 0;
+        bool groundHit = Physics.OverlapCapsule(p1 - new Vector3(0.0f, _stats.GrounderDistance, 0.0f), p2,  _col.radius*0.95f, ~_stats.PlayerLayer).Length > 0;
         bool ceilingHit = Physics.OverlapCapsule(p1, p2 + new Vector3(0.0f, _stats.GrounderDistance, 0.0f), _col.radius * 0.95f, ~_stats.PlayerLayer).Length > 0;
 
         #region Ceiling Hit & Grounded check
@@ -224,6 +228,18 @@ public class PlayerMovement : MonoBehaviour
             _bufferedJumpUsable = true;
             _jumpEndedEarly = false;
             GroundedChanged?.Invoke(true, Mathf.Abs(_frameVelocity.y));
+
+            if(Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 1.5f, ~_stats.PlayerLayer))
+            {
+                if (hit.collider.gameObject.GetComponentInParent<Wall>() != null && hit.collider.gameObject.GetComponentInParent<Wall>().type == Wall.WallType.Ice)
+                {
+                    _hasTouchedIce = true;
+                }
+                else
+                {
+                    _hasTouchedIce = false;
+                }
+            }
         }
         else if (_grounded && !groundHit) // player leaves ground
         {
@@ -231,6 +247,8 @@ public class PlayerMovement : MonoBehaviour
             _grounded = false;
             _frameLeftGrounded = _time;
             GroundedChanged?.Invoke(false, 0);
+
+            if (_hasTouchedIce) _hasTouchedIce = false;
         }
 
         // if player is on ice, change grounding force, else, reset it back to normal
@@ -247,6 +265,7 @@ public class PlayerMovement : MonoBehaviour
         if (Physics.Linecast(rayP1, rayP2, out RaycastHit hitInfo, ~_stats.PlayerLayer))
         {
             if (_grounded) return;
+            if(hitInfo.collider.gameObject.GetComponentInParent<Wall>().type == Wall.WallType.Ice) return;
 
             _canWallJump = true;
             _wallJumpVector = hitInfo.normal * _stats.MaxSpeed;
