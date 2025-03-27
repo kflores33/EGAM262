@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour
     public TMP_Text endScreenText;
     bool _canShowEndScreen;
 
-    PlayerMovement _playerMovement;
+    public PlayerMovement _playerMovement;
     float _playerHeight = 0;
     float _score = 0;
 
@@ -25,15 +25,14 @@ public class GameManager : MonoBehaviour
     float _timeRemaining = 0;
     public TMP_Text timeText;
 
-    private void Awake()
-    {
-        _playerMovement = FindFirstObjectByType<PlayerMovement>();
-        _gameIsRunning = true;
-        _timeRemaining = _timeLimitMax;
-    }
-
     private void Start()
     {
+        //_playerMovement = FindFirstObjectByType<PlayerMovement>();
+
+        Time.timeScale = 1;
+        _gameIsRunning = true;
+        _timeRemaining = _timeLimitMax;
+
         UpdateScoreboard();
 
         submitScoreButton.onClick.AddListener(SubmitScore);
