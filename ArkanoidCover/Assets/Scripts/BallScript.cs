@@ -1,27 +1,57 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class BallScript : MonoBehaviour
 {
+    public Transform RefPos;
     public BallData BallData;
-    float _currentSpeed;    
+    public float CurrentSpeed;    
 
     #region Tim Ball Script
     public float Radius;
     public float StartingAngle;
 
+    public bool IsSlowed = false;
+
     private Vector2 _velocity = Vector2.zero;
+    public float StoredAngle;
 
     private void Start()
     {
-        _currentSpeed = BallData.BaseSpeed;
-        _velocity = (Quaternion.AngleAxis(StartingAngle, Vector3.forward) * Vector2.right) * _currentSpeed;
+        RefPos = FindAnyObjectByType<FailPointRef>().transform;
+
+        StoredAngle = StartingAngle;
+
+        CurrentSpeed = 0;
+        _velocity = (Quaternion.AngleAxis(StartingAngle, Vector3.forward) * Vector2.right)/* * CurrentSpeed*/;
+    }
+
+    private void Update()
+    {
+        if(this.transform.position.y < RefPos.position.y)
+        {
+            Destroy(this.gameObject);
+        }
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+        BallMovement(CurrentSpeed);
+    }
+    #endregion
+
+    public void ChangeSpeed(float newSpeed)
+    {
+        CurrentSpeed = newSpeed;
+    }
+
+    void BallMovement(float speed)
+    {
+        _velocity = _velocity.normalized * speed;
+
         Vector2 startPos = this.transform.position;
         Vector2 moveVectorThisFrame = (_velocity * Time.fixedDeltaTime);
         Vector2 endPos = startPos + moveVectorThisFrame;
@@ -40,11 +70,49 @@ public class BallScript : MonoBehaviour
 
                 _velocity = Vector2.Reflect(_velocity, hit.normal);
             }
-        }
 
+            if(hit.collider.GetComponent<BrickScript>() != null)
+            {
+                hit.collider.GetComponent<BrickScript>().TakeDamage();
+            }
+
+            if (hit.collider.GetComponent<VausPaddle>() != null)
+            {
+                // if vaus is in catch state
+                if(hit.collider.GetComponent<VausPaddle>().CurrentState == VausPaddle.VausState.Catch && !_ignoreCollision)
+                {
+                    endPos = hit.centroid;
+
+                    if(StoredAngle == 0) StoredAngle = Mathf.Atan2(_velocity.y, _velocity.x) * Mathf.Rad2Deg;
+
+                    _velocity = Vector2.zero;
+
+                    transform.SetParent(hit.collider.transform);
+                }
+            }
+        }
 
         transform.position = endPos;
 
     }
-    #endregion
+
+    bool _ignoreCollision = false;
+    public void ReleaseBall()
+    {
+        transform.SetParent(null);
+        _velocity = (Quaternion.AngleAxis(StoredAngle, Vector3.forward) * Vector2.up) * CurrentSpeed;
+
+        StoredAngle = 0;
+
+        StartCoroutine(_ignoreCollisionCoroutine());
+    }
+
+    IEnumerator _ignoreCollisionCoroutine()
+    {
+        _ignoreCollision = true;
+        yield return new WaitForSeconds(0.2f);
+        _ignoreCollision = false;
+
+        StopCoroutine(_ignoreCollisionCoroutine());
+    }
 }

@@ -384,6 +384,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Arcade - Arkanoid - Fields_11
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 251
+        width: 15
+        height: 5
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d37262c40c76c3640a915558e4fb81cb
+      internalID: -1509413969
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -401,6 +423,7 @@ TextureImporter:
       Arcade - Arkanoid - Fields_0: -3773988775388883341
       Arcade - Arkanoid - Fields_1: 4224967858164605882
       Arcade - Arkanoid - Fields_10: -5868828634928469804
+      Arcade - Arkanoid - Fields_11: -1509413969
       Arcade - Arkanoid - Fields_2: 3420288384509650776
       Arcade - Arkanoid - Fields_3: 616438986799397523
       Arcade - Arkanoid - Fields_4: 9072533680289047037
