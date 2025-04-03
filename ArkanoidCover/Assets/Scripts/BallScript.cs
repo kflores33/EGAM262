@@ -7,7 +7,7 @@ public class BallScript : MonoBehaviour
 {
     public Transform RefPos;
     public BallData BallData;
-    public float CurrentSpeed;    
+    public float CurrentSpeed = 0;    
 
     #region Tim Ball Script
     public float Radius;
@@ -24,7 +24,6 @@ public class BallScript : MonoBehaviour
 
         StoredAngle = StartingAngle;
 
-        CurrentSpeed = 0;
         _velocity = (Quaternion.AngleAxis(StartingAngle, Vector3.forward) * Vector2.right)/* * CurrentSpeed*/;
     }
 
@@ -94,6 +93,11 @@ public class BallScript : MonoBehaviour
 
         transform.position = endPos;
 
+    }
+
+    public float CurrentAngle()
+    {
+        return Mathf.Atan2(_velocity.y, _velocity.x) * Mathf.Rad2Deg;
     }
 
     bool _ignoreCollision = false;

@@ -1355,7 +1355,7 @@ SpriteRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 374843347}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -2465,6 +2465,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d20aaa47ce0fb644f87469853aae8597, type: 3}
+--- !u!1 &742695145
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 742695146}
+  m_Layer: 3
+  m_Name: LaserSpawnL
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &742695146
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 742695145}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.12, y: 0.75, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1588783950}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &764866394
 GameObject:
   m_ObjectHideFlags: 0
@@ -2474,6 +2505,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 764866395}
+  - component: {fileID: 764866396}
   m_Layer: 0
   m_Name: BordersColliders
   m_TagString: Untagged
@@ -2499,6 +2531,18 @@ Transform:
   - {fileID: 1096045107}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &764866396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 764866394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b2ad51510999e646907b7274de0a55c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &767338814
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3634,7 +3678,7 @@ SpriteRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1096045105}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -4164,12 +4208,21 @@ MonoBehaviour:
   PowerUpTypes:
   - {fileID: 4423158907683362775, guid: 23b059a192460eb45a9e46a9b372e525, type: 3}
   - {fileID: 4423158907683362775, guid: 23b059a192460eb45a9e46a9b372e525, type: 3}
+  - {fileID: 4423158907683362775, guid: 23b059a192460eb45a9e46a9b372e525, type: 3}
   - {fileID: 1567264568304027291, guid: bec026a4d98d31b4da4bb5568b257a15, type: 3}
   - {fileID: 1567264568304027291, guid: bec026a4d98d31b4da4bb5568b257a15, type: 3}
+  - {fileID: 1567264568304027291, guid: bec026a4d98d31b4da4bb5568b257a15, type: 3}
+  - {fileID: 7025690662306113159, guid: 996beb58a4d6a314ebc169c9b60a3a5e, type: 3}
   - {fileID: 7025690662306113159, guid: 996beb58a4d6a314ebc169c9b60a3a5e, type: 3}
   - {fileID: 7025690662306113159, guid: 996beb58a4d6a314ebc169c9b60a3a5e, type: 3}
   - {fileID: 7025690662306113159, guid: 996beb58a4d6a314ebc169c9b60a3a5e, type: 3}
   - {fileID: 974856349280783123, guid: 16c60e478c72f0c4fb55d9a62a8bd5a4, type: 3}
+  - {fileID: 166206057614399148, guid: ece82b63324df3e4c862ba2d4cee236b, type: 3}
+  - {fileID: 166206057614399148, guid: ece82b63324df3e4c862ba2d4cee236b, type: 3}
+  - {fileID: 5239279782029357281, guid: 431e7e239cee0004cbab32c12e62fa47, type: 3}
+  - {fileID: 5239279782029357281, guid: 431e7e239cee0004cbab32c12e62fa47, type: 3}
+  - {fileID: 5239279782029357281, guid: 431e7e239cee0004cbab32c12e62fa47, type: 3}
+  - {fileID: 5239279782029357281, guid: 431e7e239cee0004cbab32c12e62fa47, type: 3}
   amtOfBricksSinceLastPowerUp: 0
   _probabilityOfSpawn: 0
   MaxAmtBetweenPowerUps: 6
@@ -4474,6 +4527,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scene: SampleScene
+--- !u!1 &1319668826
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1319668827}
+  m_Layer: 3
+  m_Name: LaserSpawnR
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1319668827
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1319668826}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.12, y: 0.75, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1588783950}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1321550655
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5159,7 +5243,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 0
   m_Sprite: {fileID: 8556803378914536863, guid: eb48f9dca15a36345ae2eb188cb46850, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5541,7 +5625,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!212 &1582281871
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -5585,7 +5669,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -1
   m_Sprite: {fileID: 8556803378914536863, guid: eb48f9dca15a36345ae2eb188cb46850, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5693,6 +5777,8 @@ Transform:
   - {fileID: 2132792620}
   - {fileID: 2009653402}
   - {fileID: 778463698}
+  - {fileID: 742695146}
+  - {fileID: 1319668827}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1588783951
@@ -5707,6 +5793,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e2914f6020a11144a9a89562f6d7b55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  LaserPrefab: {fileID: 1388252340426268550, guid: 30b3c576c8becc9429b0bbffc3d7a635, type: 3}
   PlayerLayer:
     serializedVersion: 2
     m_Bits: 0
@@ -5715,6 +5802,8 @@ MonoBehaviour:
   CurrentWidth: 8
   AlreadyInState: 0
   CurrentState: 0
+  LaserL: {fileID: 742695146}
+  LaserR: {fileID: 1319668827}
 --- !u!95 &1588783952
 Animator:
   serializedVersion: 7
@@ -6322,7 +6411,7 @@ SpriteRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1787432965}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1

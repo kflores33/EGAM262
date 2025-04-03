@@ -16,22 +16,7 @@ public class GameManager : MonoBehaviour
 
     public GameObject BallPrefab;
 
-    Coroutine _slowBallCoroutine;
-
-    public static GameManager Instance;
-
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
+    public Coroutine _slowBallCoroutine;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -59,7 +44,9 @@ public class GameManager : MonoBehaviour
             FindFirstObjectByType<PowerUpSpawner>().ResetPowerUpCounter();
 
             // instantiate a new ball
-            GameObject ball = Instantiate(BallPrefab, new Vector2(0, -26.9f), Quaternion.identity, FindFirstObjectByType<VausPaddle>().GetComponent<Transform>());
+            GameObject ball = BallPrefab;
+            //ball.GetComponent<BallScript>().ChangeSpeed(0);
+            Instantiate(ball, new Vector2(0, -26.9f), Quaternion.identity, FindFirstObjectByType<VausPaddle>().GetComponent<Transform>());
         }
     }
 

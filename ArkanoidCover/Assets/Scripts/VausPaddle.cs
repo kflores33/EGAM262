@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class VausPaddle : MonoBehaviour
 {
+    public GameObject LaserPrefab;
+
     float _playerSpeed = 38f;
     Vector2 _velocity = Vector2.zero;
 
@@ -121,7 +123,14 @@ public class VausPaddle : MonoBehaviour
     }
     void UpdateCatch()
     {
-        if(GetComponentInChildren<BallScript>() != null)
+        if (!AlreadyInState)
+        {
+            AlreadyInState = true;
+            CurrentWidth = _defaultWidth;
+            VausCollider.size = new Vector2(CurrentWidth, 2);
+            Animator.SetTrigger("Default");
+        }
+        if (GetComponentInChildren<BallScript>() != null)
         {
             if(_releaseHoldCoroutine == null)
             {
@@ -139,15 +148,37 @@ public class VausPaddle : MonoBehaviour
             }
         }
     }
+
+    public Transform LaserL;
+    public Transform LaserR;
+    bool _canShoot = true;
     void UpdateLaser()
     {
-        //if (Input.GetButtonDown("Fire1"))
-        //{
-        //    GameObject laser = Instantiate(laserPrefab, transform.position, Quaternion.identity);
-        //    laser.transform.localScale = new Vector3(1, 1, 1);
-        //    laser.GetComponent<Rigidbody2D>().velocity = new Vector2(0, 10);
-        //}
+        if (!AlreadyInState)
+        {
+            AlreadyInState = true;
+            CurrentWidth = _defaultWidth;
+            VausCollider.size = new Vector2(CurrentWidth, 2);
+            Animator.SetTrigger("Laser");
+        }
+        if (Input.GetKeyDown(KeyCode.X) && _canShoot)
+        {
+            GameObject laserL = Instantiate(LaserPrefab, LaserL.position, Quaternion.identity);
+            GameObject laserR = Instantiate(LaserPrefab, LaserR.position, Quaternion.identity);
+
+            StartCoroutine(ShootCD());
+        }
     }
+
+    IEnumerator ShootCD()
+    {
+        _canShoot = false;
+        yield return new WaitForSeconds(0.1f);
+        _canShoot = true;
+
+        StopCoroutine(ShootCD());
+    }
+
     void UpdateEnlarge()
     {
         if (!AlreadyInState)
@@ -162,6 +193,13 @@ public class VausPaddle : MonoBehaviour
 
     void UpdateStart()
     {
+        if (!AlreadyInState)
+        {
+            AlreadyInState = true;
+            CurrentWidth = _defaultWidth;
+            VausCollider.size = new Vector2(CurrentWidth, 2);
+            Animator.SetTrigger("Default");
+        }
         if (GetComponentInChildren<BallScript>() != null)
         {
             if (_releaseHoldCoroutine == null)
@@ -170,6 +208,11 @@ public class VausPaddle : MonoBehaviour
             }
 
             BallScript ball = GetComponentInChildren<BallScript>();
+            ball.ChangeSpeed(0f);
+            if (ball.transform.position.y != -26.9f)
+            {
+                ball.transform.position = new Vector2(this.transform.position.x, -26.9f);
+            }
 
             if (Input.GetKeyDown(KeyCode.X))
             {

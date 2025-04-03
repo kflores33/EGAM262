@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PowerUpPickup : MonoBehaviour
@@ -8,6 +9,14 @@ public class PowerUpPickup : MonoBehaviour
     private void Start()
     {
         _velocity = (Quaternion.AngleAxis(0, Vector3.forward) * Vector2.down) * 10;
+    }
+
+    private void Update()
+    {
+        if (transform.position.y < FindFirstObjectByType<FailPointRef>().transform.position.y)
+        {
+            Destroy(this.gameObject);
+        }
     }
 
     private void FixedUpdate()
