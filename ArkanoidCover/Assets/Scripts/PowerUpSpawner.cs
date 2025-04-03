@@ -63,7 +63,7 @@ public class PowerUpSpawner : MonoBehaviour
 
     public void TrySpawnPowerUp(Vector2 position)
     {
-        if (CanSpawnPowerup())
+        if (CanSpawnPowerup() && FindObjectsByType<BallScript>(FindObjectsSortMode.None).Length < 2)
         {
             int randomPowerUp = Random.Range(0, PowerUpTypes.Count); 
             GameObject powerUp = Instantiate(PowerUpTypes[randomPowerUp], position, Quaternion.identity);

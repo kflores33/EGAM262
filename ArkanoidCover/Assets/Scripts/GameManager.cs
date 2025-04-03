@@ -25,6 +25,8 @@ public class GameManager : MonoBehaviour
         CurrentHealth = BaseHealth;
     }
 
+    public GameObject win;
+    public GameObject lose;
     // Update is called once per frame
     void Update()
     {
@@ -48,6 +50,16 @@ public class GameManager : MonoBehaviour
             //ball.GetComponent<BallScript>().ChangeSpeed(0);
             Instantiate(ball, new Vector2(0, -26.9f), Quaternion.identity, FindFirstObjectByType<VausPaddle>().GetComponent<Transform>());
         }
+
+        if(FindFirstObjectByType<BrickScript>() == null)
+        {
+            win.SetActive(true);
+            Time.timeScale = 0f;
+        }
+        else
+        {
+            win.SetActive(false);
+        }
     }
 
     public void AddScore(int score)
@@ -69,6 +81,8 @@ public class GameManager : MonoBehaviour
         {
             // Game Over
             Debug.Log("Game Over");
+            lose.SetActive(true);
+
             Time.timeScale = 0f;
         }
 

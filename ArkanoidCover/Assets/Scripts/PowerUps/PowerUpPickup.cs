@@ -1,4 +1,6 @@
 using Unity.VisualScripting;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PowerUpPickup : MonoBehaviour
@@ -32,6 +34,7 @@ public class PowerUpPickup : MonoBehaviour
             if (hit.collider.GetComponent<VausPaddle>() != null)
             {
                 powerupEffect.ApplyEffect();
+                FindFirstObjectByType<GameManager>().AddScore(100);
                 Destroy(this.gameObject);
             }
         }
