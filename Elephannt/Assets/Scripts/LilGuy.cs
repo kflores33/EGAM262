@@ -20,15 +20,17 @@ public class LilGuy : MonoBehaviour
     private void Update()
     {
         Debug.Log("Detection radius is now " + AdjustDetectRadiusSize() + " big.");
+        RunFromCursor();
     }
 
     void RunFromCursor()
     {
-        Physics2D.CircleCast(transform.position, 0.5f, Vector2.zero, 0f);
+        Physics2D.CircleCast(transform.position, currentDetectRadius, Vector2.zero, 0f);
 
         // Get the mouse position in world coordinates
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePosition.z = 0; // Set z to 0 since we're in 2D
+
         // Calculate the direction away from the mouse
         Vector3 direction = (transform.position - mousePosition).normalized;
         // Move the object away from the mouse
