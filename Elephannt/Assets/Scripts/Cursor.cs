@@ -7,6 +7,11 @@ public class Cursor : MonoBehaviour
     public Vector2 CurrentVelocity { get; set; }
 
     LayerMask _thisLayer;
+    public LayerMask ThisLayer
+    {
+        get { return _thisLayer; }
+        set { _thisLayer = value; }
+    }
 
     private void Start()
     {
