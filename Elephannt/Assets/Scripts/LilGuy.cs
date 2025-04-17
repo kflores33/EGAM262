@@ -7,7 +7,10 @@ public class LilGuy : MonoBehaviour
     Cursor _cursor;
 
     [Header("Movement Speed")]
+    public float minSpeed = 1.0f;
     public float maxSpeed = 5.0f;
+    public float targetSpeed = 0.0f;
+
     float _currentSpeed = 0.0f;
 
     public float acceleration = 1.0f;
@@ -66,6 +69,8 @@ public class LilGuy : MonoBehaviour
 
     void UpdateIdle()
     {
+        AdjustSpeed();
+
         if (ShouldRunFromCursor())
         {
             _state = ElephantState.RunAway;
@@ -76,7 +81,7 @@ public class LilGuy : MonoBehaviour
     }
     void UpdateRunAway()
     {
-        float currentSpeed = Mathf.MoveTowards(_currentSpeed, maxSpeed, acceleration);
+        float currentSpeed = Mathf.MoveTowards(targetSpeed, maxSpeed, acceleration);
 
         // Get the mouse position in world coordinates
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -84,10 +89,10 @@ public class LilGuy : MonoBehaviour
 
         // Calculate the direction away from the mouse
         Vector3 direction = (transform.position - mousePosition).normalized * currentSpeed;
+        direction = AdjustAngle(direction); // slight variation in angle
+
         // Move the object away from the mouse
         transform.position += direction * Time.deltaTime;
-
-
 
         _currentSpeed = currentSpeed;
     }
@@ -132,13 +137,33 @@ public class LilGuy : MonoBehaviour
         return currentDetectRadius;
     }
 
+    float AdjustSpeed()
+    {
+        Vector2 cursorVelocity = _cursor.CurrentVelocity;
+        float cursorSpeed = cursorVelocity.magnitude;
+
+        targetSpeed = Mathf.Clamp(cursorSpeed, minSpeed, maxSpeed);
+
+        return targetSpeed;
+    }
+
+    Vector2 AdjustAngle(Vector2 direction)
+    {
+        // slightly adjust angle to randomize the direction
+        float angle = Random.Range(-0.2f, 0.2f);
+        Quaternion rotation = Quaternion.Euler(0, 0, angle);
+        Vector2 adjustedDirection = rotation * direction;
+
+        return adjustedDirection;
+    }
+
     IEnumerator WaitToReturnIdle()
     {
-        yield return new WaitForSeconds(BufferTime);        
-        
+        yield return new WaitForSeconds(BufferTime); 
+
         if (!ShouldRunFromCursor())
         {
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.25f);
 
             _state = ElephantState.Idle;
             Debug.Log("No longer running away from cursor.");
