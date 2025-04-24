@@ -170,6 +170,11 @@ public class LilGuy : MonoBehaviour
         transform.position = _endPos; // Move the elephant to the new position
     }
 
+    void HandleCollision(RaycastHit2D collisionHit)
+    {
+
+    }
+
 
     bool ShouldRunFromCursor()
     {
