@@ -7,7 +7,9 @@ public class ObstacleType : ScriptableObject
     {
         Wall,
         Spike,
-        SpeedUp
+        SpeedUp,
+        Destroyable,
+        Checkpoint
     }
     public Type type;
 }

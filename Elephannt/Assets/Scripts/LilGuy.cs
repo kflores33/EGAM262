@@ -4,12 +4,17 @@ using System.Collections;
 
 public class LilGuy : MonoBehaviour
 {
+    #region variables
     Cursor _cursor;
+    Rigidbody2D _rb;
+    public RespawnPlayer RespawnPlayer;
 
     [Header("Movement Speed")]
     public float minSpeed = 1.0f;
     public float maxSpeed = 5.0f;
     public float targetSpeed = 0.0f;
+
+    public float speedMultiplier = 2.0f; // multiplier for speed adjustment
 
     float _currentSpeed = 0.0f;
     Vector2 _currentDirection;
@@ -46,10 +51,13 @@ public class LilGuy : MonoBehaviour
     [SerializeField] ElephantState _state = ElephantState.Idle;
 
     Coroutine _bufferCoroutine;
+    #endregion
 
     private void Start()
     {
+        _rb = GetComponent<Rigidbody2D>();
         _cursor = FindAnyObjectByType<Cursor>();
+        RespawnPlayer = RespawnPlayer.Instance;
 
         _elephantLayer = LayerMask.GetMask("Elephant");
     }
@@ -59,7 +67,6 @@ public class LilGuy : MonoBehaviour
 
     private void Update()
     {
-
         AdjustDetectRadiusSize();
 
         //Debug.Log("Detection radius is now " + AdjustDetectRadiusSize() + " big.");
@@ -85,7 +92,7 @@ public class LilGuy : MonoBehaviour
         {
             _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, deceleration * Time.deltaTime);
         }
-        else _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, acceleration * Time.deltaTime);
+        else _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, acceleration * Time.deltaTime); // otherwise accelerate
 
         //transform.position += (Vector3)(_currentDirection * _currentSpeed * Time.deltaTime);
 
@@ -99,7 +106,7 @@ public class LilGuy : MonoBehaviour
         deceleration = defaultDeceleration; // Reset deceleration to default
         targetSpeed = 0.0f; // Set target speed to 0 for idle state
 
-        if (ShouldRunFromCursor() && !_ignoreCursorInfluence)
+        if (ShouldRunFromCursor())
         {
             _state = ElephantState.RunAway;
             Debug.Log("Running away from cursor!");
@@ -140,41 +147,112 @@ public class LilGuy : MonoBehaviour
     bool _ignoreCursorInfluence = false; // flag to ignore cursor influence
     void MoveElephant()
     {
-        _startPos = transform.position;
+        _startPos = transform.position; // position before movement
         Vector2 currentVelocity = _currentDirection * _currentSpeed;
-        Vector2 moveVectorThisFrame = currentVelocity * Time.deltaTime;
-        _endPos = (Vector2)transform.position + moveVectorThisFrame;
+        Vector2 moveVectorThisFrame = currentVelocity * Time.deltaTime; // move elephant by this amount/direction
+        _endPos = (Vector2)transform.position + moveVectorThisFrame; // position to move to
 
         LayerMask layersToInclude = Physics2D.AllLayers & ~(_elephantLayer | _cursor.ThisLayer); // Include all layers except the elephant and cursor layers
 
-        RaycastHit2D hit = Physics2D.CircleCast(transform.position, 0.5f, _currentDirection, 0.5f, layersToInclude);
+        RaycastHit2D hit = Physics2D.CircleCast(transform.position, 0.8f, _currentDirection, moveVectorThisFrame.magnitude, layersToInclude);
 
         if (hit.collider != null)
         {
             Debug.Log("Hit something: " + hit.collider.name);
-            float velocityComparedToNormal = Vector2.Dot(moveVectorThisFrame.normalized, hit.normal);
 
-            if (velocityComparedToNormal < 0.0f)
+            // Calculate the reflection vector only if the object is moving toward the surface
+            float velocityComparedToNormal = Vector2.Dot(currentVelocity.normalized, hit.normal);
+
+            ObstacleBehavior obstacleHit = hit.collider.GetComponent<ObstacleBehavior>();
+            if (obstacleHit != null)
             {
-                // Calculate the reflection vector
-                _endPos = hit.centroid;
-
-                currentVelocity = Vector2.Reflect(currentVelocity, hit.normal);
-
-                _currentDirection = currentVelocity.normalized; // Update the direction based on the reflection
-
-                // ignore cursor influence for a second
+                HandleCollision(hit.collider.GetComponent<ObstacleBehavior>(),
+                    velocityComparedToNormal, currentVelocity, hit);
             }
         }
 
         transform.position = _endPos; // Move the elephant to the new position
     }
 
-    void HandleCollision(RaycastHit2D collisionHit)
+    #region collision behavior
+    public void HandleCollision(ObstacleBehavior obstacleHit,
+        float velocityComparedToNormal, Vector2 currentVelocity, RaycastHit2D hit)
     {
+        switch (obstacleHit.ObstacleType.type)
+        {
+            case ObstacleType.Type.Wall:
+                // Handle wall collision
+                WallBehavior(velocityComparedToNormal, currentVelocity, hit);
+                break;
+            case ObstacleType.Type.Spike:
+                // Handle spike collision
+                SpikeBehavior();
+                break;
+            case ObstacleType.Type.SpeedUp:
+                // Handle speed up collision
+                SpeedUpBehavior();
+                break;
+            case ObstacleType.Type.Destroyable:
+                DestroyableBehavior(velocityComparedToNormal, currentVelocity, hit);
+                break;
+            case ObstacleType.Type.Checkpoint:
+                // Handle checkpoint collision
+                CheckpointBehavior(hit);
+                break;
 
+                //default:
+                //    WallBehavior(velocityComparedToNormal, currentVelocity, hit); // Default behavior for unknown types
+                //    break;
+        }
     }
 
+    void WallBehavior(float velocityComparedToNormal, Vector2 currentVelocity, RaycastHit2D hit)
+    { 
+        if (velocityComparedToNormal < 0.0f)
+        {
+            // Reflect the velocity and adjust the direction
+            currentVelocity = Vector2.Reflect(currentVelocity, hit.normal);
+            _currentDirection = currentVelocity.normalized;
+
+            // Adjust position to avoid overlapping with the hit object
+            _endPos = hit.centroid;
+
+            // Temporarily ignore cursor influence to allow natural reaction
+            if (_generalBuffer == null)
+            {
+                _generalBuffer = StartCoroutine(Buffer(0.5f, _ignoreCursorInfluence));
+            }
+        }
+    }
+    void SpikeBehavior()
+    {
+        // hurt elephant (die and restart from checkpoint)
+        Die();
+    }
+    void SpeedUpBehavior()
+    { 
+        // increase speed of elephant to max on contact (naturally decelerate over time)
+        _currentSpeed = maxSpeed;
+    }
+    void DestroyableBehavior(float velocityComparedToNormal, Vector2 currentVelocity, RaycastHit2D hit)
+    {
+        // destroy the object
+        if(_currentSpeed >= maxSpeed/3 * 2)
+        {
+            Destroy(hit.collider.gameObject);
+            _currentSpeed -= maxSpeed / 4; // slow down after collision
+        }
+        else
+        {
+            WallBehavior(velocityComparedToNormal, currentVelocity, hit); // Default behavior for unknown types
+        }
+    }
+    void CheckpointBehavior(RaycastHit2D hit)
+    {
+        // save the current position as a checkpoint
+        RespawnPlayer.SetNewCheckpoint(hit.collider.gameObject); // set the checkpoint to the object hit
+    }
+    #endregion
 
     bool ShouldRunFromCursor()
     {
@@ -192,6 +270,8 @@ public class LilGuy : MonoBehaviour
 
     void ChangeDirectionBasedOnCursorPos()
     {
+        if (_ignoreCursorInfluence) return;
+
         // Get the mouse position in world coordinates
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePosition.z = 0; // Set z to 0 since we're in 2D
@@ -224,7 +304,7 @@ public class LilGuy : MonoBehaviour
     float AdjustSpeed()
     {
         Vector2 cursorVelocity = _cursor.CurrentVelocity;
-        float cursorSpeed = cursorVelocity.magnitude;
+        float cursorSpeed = cursorVelocity.magnitude * speedMultiplier;
 
         targetSpeed = Mathf.Clamp(cursorSpeed, minSpeed, maxSpeed);
 
@@ -303,10 +383,26 @@ public class LilGuy : MonoBehaviour
         targetSpeed = launchSpeed;
     }
 
-    Coroutine _generalBuffer = null;
-    public IEnumerator Buffer(float time)
+    void Die()
     {
+        Destroy(gameObject); // Destroy the elephant object
+        // Handle death behavior
+        Debug.Log("Elephant died!");
+        // Reset the elephant's position to the last checkpoint
+        RespawnPlayer.Respawn();
+    }
+
+    Coroutine _generalBuffer = null;
+    public IEnumerator Buffer(float time, bool optionalSwitch = false)
+    {
+        optionalSwitch = true;
+
         yield return new WaitForSeconds(time);
+
+        if (optionalSwitch)
+        {
+            optionalSwitch = false;
+        }
 
         _generalBuffer = null; // Reset the coroutine reference
     }

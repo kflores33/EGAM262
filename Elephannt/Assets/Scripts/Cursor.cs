@@ -54,17 +54,22 @@ public class Cursor : MonoBehaviour
 
     public void TrackCursorVelocity()
     {
-        // Get the mouse position in world coordinates
-        Vector3 mousePosition3D = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector2 mousePosition = new Vector2(mousePosition3D.x, mousePosition3D.y);
+        // Get the current mouse position in world space
+        Vector3 mousePosWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mousePosWorld.z = 0; // Ensure z is 0 since we're in 2D
 
-        ObjToCursorPos(mousePosition);
+        // Calculate velocity in world space
+        Vector2 mousePosCurrentFrame = new Vector2(mousePosWorld.x, mousePosWorld.y);
+        CurrentVelocity = (mousePosCurrentFrame - _mousePosLastFrame) / Time.deltaTime;
 
-        CurrentVelocity = (mousePosition - _mousePosLastFrame) / Time.deltaTime;
+        // Normalize velocity by screen size to account for resolution differences
+        float screenToWorldScale = Camera.main.orthographicSize * 2 / Screen.height;
+        CurrentVelocity *= screenToWorldScale;
 
-        _mousePosLastFrame = mousePosition;
+        ObjToCursorPos(mousePosCurrentFrame);
 
-        //Debug.Log("Mouse Speed is " + CurrentVelocity.magnitude + " units per second.");
+        // Store the current position for the next frame
+        _mousePosLastFrame = mousePosCurrentFrame;
     }
     void ObjToCursorPos(Vector2 mousePos)
     {
