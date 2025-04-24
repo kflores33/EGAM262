@@ -9,7 +9,8 @@ public class ObstacleType : ScriptableObject
         Spike,
         SpeedUp,
         Destroyable,
-        Checkpoint
+        Checkpoint,
+        Goal
     }
     public Type type;
 }

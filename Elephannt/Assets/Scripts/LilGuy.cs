@@ -6,8 +6,8 @@ public class LilGuy : MonoBehaviour
 {
     #region variables
     Cursor _cursor;
-    Rigidbody2D _rb;
-    public RespawnPlayer RespawnPlayer;
+    LineRenderer _lineRenderer;
+    RespawnPlayer RespawnPlayer;
 
     [Header("Movement Speed")]
     public float minSpeed = 1.0f;
@@ -39,7 +39,7 @@ public class LilGuy : MonoBehaviour
 
     [Header("Misc")]
     public float BufferTime = 1.0f;
-    [Tooltip("Adjusts the randomness of Elephant's direction"), Range(0f, 5f)] public float AngleVariance = 0.5f; // angle variance in degrees
+    [Tooltip("Adjusts the randomness of Elephant's direction"), Range(0f, 10f)] public float AngleVariance = 0.5f; // angle variance in degrees
     LayerMask _elephantLayer;
     public enum ElephantState
     {
@@ -55,9 +55,9 @@ public class LilGuy : MonoBehaviour
 
     private void Start()
     {
-        _rb = GetComponent<Rigidbody2D>();
         _cursor = FindAnyObjectByType<Cursor>();
         RespawnPlayer = RespawnPlayer.Instance;
+        _lineRenderer = GetComponentInChildren<LineRenderer>();
 
         _elephantLayer = LayerMask.GetMask("Elephant");
     }
@@ -126,6 +126,8 @@ public class LilGuy : MonoBehaviour
         // Handle caught behavior
         Debug.Log("Caught by the cursor!");
 
+        HandleLineRenderer();
+
         Debug.DrawRay(transform.position, _cursor.transform.position, Color.red, 0.5f);
     }
     void UpdateLaunching()
@@ -134,13 +136,6 @@ public class LilGuy : MonoBehaviour
         {
             _state = ElephantState.Idle;
         }
-
-        // influence direction with cursor without changing speed
-
-        //if (ShouldRunFromCursor() && !_ignoreCursorInfluence)
-        //{
-        //    ChangeDirectionBasedOnCursorPos();
-        //}
     }
     #endregion
 
@@ -199,10 +194,10 @@ public class LilGuy : MonoBehaviour
                 // Handle checkpoint collision
                 CheckpointBehavior(hit);
                 break;
-
-                //default:
-                //    WallBehavior(velocityComparedToNormal, currentVelocity, hit); // Default behavior for unknown types
-                //    break;
+            case ObstacleType.Type.Goal:
+                // Handle goal collision
+                GoalBehavior();
+                break;
         }
     }
 
@@ -230,14 +225,15 @@ public class LilGuy : MonoBehaviour
         Die();
     }
     void SpeedUpBehavior()
-    { 
+    {
         // increase speed of elephant to max on contact (naturally decelerate over time)
-        _currentSpeed = maxSpeed;
+        if (_currentSpeed <= maxSpeed) _currentSpeed = maxSpeed + 5;
+        else _currentSpeed = maxLaunchForce; // reset to max launch speed if already at max speed
     }
     void DestroyableBehavior(float velocityComparedToNormal, Vector2 currentVelocity, RaycastHit2D hit)
     {
         // destroy the object
-        if(_currentSpeed >= maxSpeed/3 * 2)
+        if(_currentSpeed > maxSpeed)
         {
             Destroy(hit.collider.gameObject);
             _currentSpeed -= maxSpeed / 4; // slow down after collision
@@ -249,8 +245,32 @@ public class LilGuy : MonoBehaviour
     }
     void CheckpointBehavior(RaycastHit2D hit)
     {
+        if (hit.collider.gameObject == RespawnPlayer.LatestCheckpoint)
+        {
+            Debug.Log("Already at this checkpoint!");
+            return;
+        }
+
+        if (RespawnPlayer.Checkpoints.Count != 0)
+        {
+            for (int i = 0; i < RespawnPlayer.Checkpoints.Count; i++)
+            {
+                if (hit.collider.gameObject == RespawnPlayer.Checkpoints[i])
+                {
+                    Debug.Log("Already at this checkpoint!");
+                    return;
+                }
+            }
+        }
+
         // save the current position as a checkpoint
         RespawnPlayer.SetNewCheckpoint(hit.collider.gameObject); // set the checkpoint to the object hit
+        UIManager.Instance.CheckpointReached(); // show the checkpoint reached UI
+    }
+
+    void GoalBehavior()
+    {
+        UIManager.Instance.EndGame(); // show the win screen
     }
     #endregion
 
@@ -322,6 +342,110 @@ public class LilGuy : MonoBehaviour
     }
     #endregion
 
+
+    public void OnClickedByPlayer()
+    {
+        if (_state == ElephantState.RunAway)
+        {
+            _state = ElephantState.Caught;
+            Debug.Log("Caught by the player!");
+
+            targetSpeed = 0;
+            _currentSpeed = 0;
+
+            if (_bufferCoroutine != null) 
+            {                
+                StopCoroutine(_bufferCoroutine); // Stop the coroutine if it's running
+                _bufferCoroutine = null; // Stop the coroutine if it's running
+            }
+
+            _lineRenderer.enabled = true; // Enable the line renderer
+        }
+    }
+    public void OnReleasedByPlayer()
+    {
+        // distance between cursor and elephant = launch force
+        float distance = Vector2.Distance(transform.position, _cursor.transform.position);
+        float launchForce = Mathf.Clamp(distance, 0, maxLaunchForce);
+
+        Vector2 direction = (transform.position - _cursor.transform.position).normalized;
+
+        if (_state == ElephantState.Caught)
+        {
+            _state = ElephantState.Launching;
+            Debug.Log("Released by the player!");
+
+            LaunchElephant(direction, launchForce);
+
+            _lineRenderer.enabled = false;
+        }
+    }
+
+    void LaunchElephant(Vector2 direction, float force)
+    {
+        _currentDirection = direction;
+        launchSpeed = force * launchForceMultiplier; // Adjust the launch speed based on the force applied
+
+        acceleration = 100.0f; // Set a high acceleration for the launch
+        targetSpeed = launchSpeed;
+    }
+
+    public Color startColorLight;
+    public Color endColorLight;
+    public Color startColorHeavy;
+    public Color endColorHeavy;
+
+    void HandleLineRenderer()
+    {
+        float distance = Vector2.Distance(transform.position, _cursor.transform.position);
+        float launchForce = Mathf.Clamp(distance, 0, maxLaunchForce);
+
+        Vector2 direction = (_cursor.transform.position - transform.position).normalized;
+
+        Vector2 endPosition = _cursor.transform.position; // Get the cursor position
+
+        if (distance > maxLaunchForce)
+        {
+            endPosition = (Vector2)transform.position + direction * maxLaunchForce; // Clamp the end position to the max launch force
+        }
+
+        if (_lineRenderer.GetPosition(0) != transform.position) _lineRenderer.SetPosition(0, transform.position); // Set the start position to the elephant's position
+        _lineRenderer.SetPosition(1, endPosition); // Set the end position
+
+        Color currentStartColor = Color.Lerp(startColorLight, startColorHeavy, launchForce / maxLaunchForce);
+        Color currentEndColor = Color.Lerp(endColorLight, endColorHeavy, launchForce / maxLaunchForce);
+
+        _lineRenderer.startWidth = Mathf.Lerp(0.1f, 0.25f, launchForce / maxLaunchForce);
+        _lineRenderer.endWidth = Mathf.Lerp(0.1f, 1f, launchForce / maxLaunchForce);
+
+        _lineRenderer.startColor = currentStartColor;
+        _lineRenderer.endColor = currentEndColor;
+    }
+
+    void Die()
+    {
+        Destroy(gameObject); // Destroy the elephant object
+        // Handle death behavior
+        Debug.Log("Elephant died!");
+        // Reset the elephant's position to the last checkpoint
+        RespawnPlayer.Respawn();
+    }
+
+    #region coroutines
+    Coroutine _generalBuffer = null;
+    public IEnumerator Buffer(float time, bool optionalSwitch = false)
+    {
+        optionalSwitch = true;
+
+        yield return new WaitForSeconds(time);
+
+        if (optionalSwitch)
+        {
+            optionalSwitch = false;
+        }
+
+        _generalBuffer = null; // Reset the coroutine reference
+    }
     IEnumerator WaitToReturnIdle()
     {
         yield return new WaitForSeconds(BufferTime); 
@@ -339,71 +463,5 @@ public class LilGuy : MonoBehaviour
             _bufferCoroutine = StartCoroutine(WaitToReturnIdle());
         }
     }
-
-    public void OnClickedByPlayer()
-    {
-        if (_state == ElephantState.RunAway)
-        {
-            _state = ElephantState.Caught;
-            Debug.Log("Caught by the player!");
-
-            targetSpeed = 0;
-            _currentSpeed = 0;
-
-            if (_bufferCoroutine != null) 
-            {                
-                StopCoroutine(_bufferCoroutine); // Stop the coroutine if it's running
-                _bufferCoroutine = null; // Stop the coroutine if it's running
-            }
-        }
-    }
-    public void OnReleasedByPlayer()
-    {
-        // distance between cursor and elephant = launch force
-        float distance = Vector2.Distance(transform.position, _cursor.transform.position);
-        float launchForce = Mathf.Clamp(distance, 0, maxLaunchForce);
-
-        Vector2 direction = (transform.position - _cursor.transform.position).normalized;
-
-        if (_state == ElephantState.Caught)
-        {
-            _state = ElephantState.Launching;
-            Debug.Log("Released by the player!");
-
-            LaunchElephant(direction, launchForce);
-        }
-    }
-
-    void LaunchElephant(Vector2 direction, float force)
-    {
-        _currentDirection = direction;
-        launchSpeed = force * launchForceMultiplier; // Adjust the launch speed based on the force applied
-
-        acceleration = 100.0f; // Set a high acceleration for the launch
-        targetSpeed = launchSpeed;
-    }
-
-    void Die()
-    {
-        Destroy(gameObject); // Destroy the elephant object
-        // Handle death behavior
-        Debug.Log("Elephant died!");
-        // Reset the elephant's position to the last checkpoint
-        RespawnPlayer.Respawn();
-    }
-
-    Coroutine _generalBuffer = null;
-    public IEnumerator Buffer(float time, bool optionalSwitch = false)
-    {
-        optionalSwitch = true;
-
-        yield return new WaitForSeconds(time);
-
-        if (optionalSwitch)
-        {
-            optionalSwitch = false;
-        }
-
-        _generalBuffer = null; // Reset the coroutine reference
-    }
+    #endregion
 }

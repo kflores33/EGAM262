@@ -1,4 +1,6 @@
+using NUnit.Framework;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class RespawnPlayer : MonoBehaviour
 {
@@ -6,7 +8,9 @@ public class RespawnPlayer : MonoBehaviour
     public static RespawnPlayer Instance => _instance;
 
     GameObject _latestCheckpoint;
+    List<GameObject> _checkpoints = new List<GameObject>();
     public GameObject LatestCheckpoint => _latestCheckpoint;
+    public List<GameObject> Checkpoints => _checkpoints;
 
     public GameObject playerPrefab;
 
@@ -21,6 +25,8 @@ public class RespawnPlayer : MonoBehaviour
 
         _instance = this;
         //DontDestroyOnLoad(gameObject); // Optional: Keep the instance across scenes (though it wouldn't be necessary in this case)
+
+        _latestCheckpoint = null; // Initialize the latest checkpoint to null
     }
 
     void Update()
@@ -36,6 +42,7 @@ public class RespawnPlayer : MonoBehaviour
     public void SetNewCheckpoint(GameObject checkpoint)
     {
         _latestCheckpoint = checkpoint;
+        _checkpoints.Add(checkpoint);
     }
 
     public void Respawn()
